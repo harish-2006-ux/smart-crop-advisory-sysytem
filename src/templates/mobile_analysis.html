@@ -1,0 +1,261 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}Comprehensive Analysis — Smart Agriculture Analytics{% endblock %}
+{% block header_title %}🔬 Analysis{% endblock %}
+{% block header_button %}❓{% endblock %}
+{% block header_action %}showHelp(){% endblock %}
+
+{% block content %}
+<div id="formSection">
+    <!-- Form Header -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
+            Farm Analysis
+        </h2>
+        <p style="color: var(--ink-dim); font-size: 0.9rem;">
+            Get AI-powered insights for your farm
+        </p>
+    </div>
+
+    <!-- Analysis Form -->
+    <form id="analysisForm">
+        <!-- Soil Section -->
+        <div class="mobile-card">
+            <h3 style="margin-bottom: 1rem; color: var(--accent);">🌱 Soil Composition</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Nitrogen (N)</label>
+                    <input type="number" name="nitrogen" class="mobile-input" value="50" min="0" max="200" placeholder="kg/ha">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Phosphorus (P)</label>
+                    <input type="number" name="phosphorus" class="mobile-input" value="30" min="0" max="100" placeholder="kg/ha">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Potassium (K)</label>
+                    <input type="number" name="potassium" class="mobile-input" value="150" min="0" max="300" placeholder="kg/ha">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Soil pH</label>
+                    <input type="number" name="ph" class="mobile-input" value="6.8" min="4.0" max="9.0" step="0.1" placeholder="pH level">
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather Section -->
+        <div class="mobile-card">
+            <h3 style="margin-bottom: 1rem; color: var(--accent);">🌤️ Weather Conditions</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Temperature (°C)</label>
+                    <input type="number" name="temperature" class="mobile-input" value="22" min="-10" max="50" placeholder="Current temperature">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Humidity (%)</label>
+                    <input type="number" name="humidity" class="mobile-input" value="65" min="0" max="100" placeholder="0-100%">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Rainfall (mm)</label>
+                    <input type="number" name="rainfall_mm" class="mobile-input" value="12" min="0" max="500" placeholder="Recent rainfall">
+                </div>
+            </div>
+        </div>
+
+        <!-- Crop Selection -->
+        <div class="mobile-card">
+            <h3 style="margin-bottom: 1rem; color: var(--accent);">🌾 Crop Information</h3>
+            
+            <label style="display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem;">Select Crop</label>
+            <select name="crop" class="mobile-input" required>
+                <option value="wheat">🌾 Wheat</option>
+                <option value="rice">🍚 Rice</option>
+                <option value="corn">🌽 Corn</option>
+                <option value="soybean">🫘 Soybean</option>
+                <option value="cotton">🌿 Cotton</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="touch-button btn-primary" style="width: 100%; margin-bottom: 2rem; justify-content: center;">
+            🔬 Analyze My Farm
+        </button>
+    </form>
+</div>
+
+<!-- Results Section -->
+<div id="resultsSection" style="display: none;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--accent);">
+            Analysis Results
+        </h2>
+        <p style="color: var(--ink-dim); font-size: 0.9rem;">
+            Your comprehensive farm insights
+        </p>
+    </div>
+
+    <!-- Crop Recommendations -->
+    <div id="cropRecommendations" class="mobile-card"></div>
+
+    <!-- Yield Prediction -->
+    <div id="yieldPrediction" class="mobile-card"></div>
+
+    <!-- Fertilizer -->
+    <div id="fertilizerCard" class="mobile-card"></div>
+
+    <!-- Irrigation -->
+    <div id="irrigationCard" class="mobile-card"></div>
+
+    <!-- New Analysis Button -->
+    <button onclick="resetForm()" class="touch-button btn-secondary" style="width: 100%; margin-bottom: 2rem; justify-content: center;">
+        ↻ New Analysis
+    </button>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" style="display: none; position: fixed; inset: 0; background: rgba(10,15,28,0.9); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="text-align: center;">
+        <div style="width: 3rem; height: 3rem; border: 3px solid var(--rule); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+        <div style="color: var(--ink); font-weight: 500; margin-bottom: 0.5rem;">Analyzing...</div>
+        <div style="color: var(--ink-dim); font-size: 0.875rem;">Running AI models</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showHelp() {
+    alert('💡 Tips:\n\n• Nitrogen (N): 0-50 low, 51-120 medium, 121+ high\n• pH: 6.0-7.5 is ideal for most crops\n• Temperature: Each crop has different needs\n• Fill all fields for best recommendations');
+}
+
+function resetForm() {
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('analysisForm').reset();
+}
+
+document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    try {
+        const response = await fetch('/api/comprehensive-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            displayResults(result.analysis);
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+});
+
+function displayResults(analysis) {
+    // Crop Recommendations
+    const cropHTML = `
+        <h3 style="margin-bottom: 1rem; color: var(--accent);">🌱 Crop Recommendations</h3>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            ${analysis.recommendations.crops.map((crop, i) => `
+                <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; display: flex; justify-content: space-between;">
+                    <div style="font-weight: 500;">#${crop.rank} ${crop.crop.toUpperCase()}</div>
+                    <div style="color: var(--accent); font-weight: 600;">${(crop.suitability_score * 100).toFixed(0)}%</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    document.getElementById('cropRecommendations').innerHTML = cropHTML;
+    
+    // Yield Prediction
+    const yieldHTML = `
+        <h3 style="margin-bottom: 1rem; color: var(--accent);">📈 Yield Prediction</h3>
+        <div style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,197,94,0.1)); padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid var(--accent);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <div>
+                    <div style="font-size: 0.875rem; color: var(--ink-dim); margin-bottom: 0.25rem;">Expected Yield</div>
+                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--crop-green);">${analysis.predictions.yield.predicted_yield.toFixed(0)} kg/ha</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.875rem; color: var(--ink-dim); margin-bottom: 0.25rem;">Confidence</div>
+                    <div style="font-size: 1.25rem; font-weight: 600; color: var(--accent);">${(analysis.predictions.yield.confidence_score * 100).toFixed(0)}%</div>
+                </div>
+            </div>
+            <div style="width: 100%; height: 8px; background: rgba(16,24,39,0.5); border-radius: 4px; overflow: hidden;">
+                <div style="width: ${analysis.predictions.yield.confidence_score * 100}%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--crop-green));"></div>
+            </div>
+        </div>
+    `;
+    document.getElementById('yieldPrediction').innerHTML = yieldHTML;
+    
+    // Fertilizer
+    const fertHTML = `
+        <h3 style="margin-bottom: 1rem; color: var(--accent);">🌿 Fertilizer Strategy</h3>
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                <span>NPK Ratio:</span>
+                <span style="font-weight: 600; color: var(--accent);">${analysis.suggestions.fertilizer.npk_ratio}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Total per hectare:</span>
+                <span style="font-weight: 600; color: var(--accent);">${analysis.suggestions.fertilizer.total_kg_per_ha} kg</span>
+            </div>
+        </div>
+        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+            ${analysis.suggestions.fertilizer.recommendations.map(rec => `
+                <li style="display: flex; gap: 0.75rem; padding: 0.75rem; background: rgba(16,24,39,0.5); border-radius: 0.5rem;">
+                    <span style="color: var(--accent);">✓</span>
+                    <span>${rec}</span>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+    document.getElementById('fertilizerCard').innerHTML = fertHTML;
+    
+    // Irrigation
+    const irrHTML = `
+        <h3 style="margin-bottom: 1rem; color: var(--accent);">💧 Irrigation Schedule</h3>
+        <div style="padding: 1rem; background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(6,182,212,0.1)); border-radius: 0.75rem; border-left: 4px solid var(--water-blue); margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <div>
+                    <div style="font-size: 0.875rem; color: var(--ink-dim); margin-bottom: 0.25rem;">Priority</div>
+                    <div style="font-weight: 600; color: var(--water-blue);">${analysis.suggestions.irrigation.urgency}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.875rem; color: var(--ink-dim); margin-bottom: 0.25rem;">Interval</div>
+                    <div style="font-weight: 600; color: var(--water-blue);">Every ${analysis.suggestions.irrigation.interval_days} days</div>
+                </div>
+            </div>
+        </div>
+        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+            ${analysis.suggestions.irrigation.recommendations.map(rec => `
+                <li style="display: flex; gap: 0.75rem; padding: 0.75rem; background: rgba(16,24,39,0.5); border-radius: 0.5rem;">
+                    <span style="color: var(--water-blue);">💧</span>
+                    <span>${rec}</span>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+    document.getElementById('irrigationCard').innerHTML = irrHTML;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</script>
+{% endblock %}

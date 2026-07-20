@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data History — Smart Agriculture Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0f1c;
+            --panel: #101827;
+            --surface: #1e293b;
+            --ink: #f8fafc;
+            --ink-dim: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --rule: rgba(248,250,252,0.1);
+            --glow: rgba(16,185,129,0.3);
+            --crop-green: #22c55e;
+            --soil-brown: #a16207;
+            --water-blue: #0ea5e9;
+            --sun-yellow: #eab308;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--void);
+        }
+
+        /* Animated Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        /* Content Container */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(16, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(248,250,252,0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--ink);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--ink-dim);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--soil-brown), #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            color: var(--ink-dim);
+            font-size: 1.25rem;
+            max-width: 60ch;
+            margin: 0 auto;
+        }
+
+        /* Controls */
+        .controls {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--ink-dim);
+        }
+
+        .control-select {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--ink);
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--glow);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--crop-green));
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--ink-dim);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        /* Data Sections */
+        .data-section {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--rule);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .section-count {
+            background: var(--surface);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            color: var(--ink-dim);
+        }
+
+        /* Record Cards */
+        .record-card {
+            background: var(--surface);
+            border-radius: 0.75rem;
+            margin: 1rem 1.5rem;
+            padding: 1.5rem;
+            border-left: 4px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .record-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .record-card:last-child {
+            margin-bottom: 1.5rem;
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .record-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .record-time {
+            color: var(--ink-dim);
+            font-size: 0.8rem;
+        }
+
+        .record-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .record-item {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(8px);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .record-item .label {
+            color: var(--ink-dim);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.05em;
+        }
+
+        .record-item .value {
+            color: var(--ink);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-high { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .badge-medium { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .badge-low { background: rgba(16,185,129,0.2); color: var(--accent); }
+        .badge-bullish { background: rgba(16,185,129,0.2); color: var(--accent); }
+        .badge-bearish { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .badge-stable { background: rgba(14,165,233,0.2); color: var(--water-blue); }
+
+        /* Loading & Empty States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--ink-dim);
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--rule);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--ink-dim);
+        }
+
+        .no-data-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .controls { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .nav-links { display: none; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .record-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="content">
+        <header class="header">
+        <nav class="nav">
+            <a href="/" class="logo">
+                <div class="logo-icon">🌾</div>
+                Smart Agriculture Analytics
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/analysis">Analysis</a></li>
+                <li><a href="/pest-detection-page">Pest Detection</a></li>
+                <li><a href="/market-prediction-page">Market</a></li>
+                <li><a href="/data-history-page" class="active">History</a></li>
+                <li><a href="/performance-page">Performance</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1 class="page-title">Agricultural Data Archive</h1>
+            <p class="page-subtitle">Complete history of your farm analyses, predictions, and insights stored securely in MongoDB</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label class="control-label">Data Type</label>
+                <select id="dataType" class="control-select">
+                    <option value="all">All Data</option>
+                    <option value="analyses">Comprehensive Analyses</option>
+                    <option value="pest">Pest Detections</option>
+                    <option value="market">Market Predictions</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Records Limit</label>
+                <select id="recordLimit" class="control-select">
+                    <option value="10">10 Records</option>
+                    <option value="25">25 Records</option>
+                    <option value="50">50 Records</option>
+                    <option value="100">100 Records</option>
+                </select>
+            </div>
+            
+            <button class="refresh-btn" onclick="loadData()">
+                🔄 Refresh Data
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <span>Loading historical data from MongoDB...</span>
+        </div>
+
+        <!-- Stats Section -->
+        <div id="statsSection" style="display: none;">
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated here -->
+            </div>
+        </div>
+
+        <!-- Data Content -->
+        <div id="dataContent">
+            <!-- Data sections will be populated here -->
+        </div>
+    </main>
+
+    <script>
+        async function loadData() {
+            const dataType = document.getElementById('dataType').value;
+            const limit = document.getElementById('recordLimit').value;
+            
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('dataContent').innerHTML = '';
+            document.getElementById('statsSection').style.display = 'none';
+            
+            try {
+                const response = await fetch(`/api/data-history?type=${dataType}&limit=${limit}`);
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayData(result.history, result.total_records);
+                } else {
+                    showNoData('Error loading data: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Data loading error:', error);
+                showNoData('Network error. Check if MongoDB is running and try again.');
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function displayData(history, totalRecords) {
+            // Display stats
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalRecords}</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${history.analyses ? history.analyses.length : 0}</div>
+                    <div class="stat-label">Comprehensive Analyses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${history.pest_detections ? history.pest_detections.length : 0}</div>
+                    <div class="stat-label">Pest Detections</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${history.market_predictions ? history.market_predictions.length : 0}</div>
+                    <div class="stat-label">Market Predictions</div>
+                </div>
+            `;
+            document.getElementById('statsSection').style.display = 'block';
+            
+            const container = document.getElementById('dataContent');
+            let content = '';
+            
+            if (totalRecords === 0) {
+                showNoData('No data found. Try running some analyses first!');
+                return;
+            }
+            
+            // Comprehensive Analyses
+            if (history.analyses && history.analyses.length > 0) {
+                content += `
+                    <div class="data-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <div class="section-icon" style="background: linear-gradient(135deg, var(--accent), var(--crop-green));">🔬</div>
+                                Comprehensive Analyses
+                            </div>
+                            <span class="section-count">${history.analyses.length}</span>
+                        </div>
+                        ${history.analyses.map(analysis => `
+                            <div class="record-card">
+                                <div class="record-header">
+                                    <div class="record-id">${analysis.analysis_id}</div>
+                                    <div class="record-time">${new Date(analysis.timestamp).toLocaleString()}</div>
+                                </div>
+                                <div class="record-content">
+                                    <div class="record-item">
+                                        <div class="label">Crop Type</div>
+                                        <div class="value">${analysis.input_conditions?.crop || 'N/A'}</div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Predicted Yield</div>
+                                        <div class="value">${analysis.predictions?.yield?.predicted_yield || 'N/A'} kg/ha</div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Market Price</div>
+                                        <div class="value">₹${analysis.predictions?.market_price?.predicted_price || 'N/A'}</div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Pest Risk</div>
+                                        <div class="value">
+                                            <span class="badge badge-${(analysis.risk_assessment?.pests?.risk_level || 'medium').toLowerCase()}">${analysis.risk_assessment?.pests?.risk_level || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Pest Detections
+            if (history.pest_detections && history.pest_detections.length > 0) {
+                content += `
+                    <div class="data-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <div class="section-icon" style="background: linear-gradient(135deg, var(--warning), #ea580c);">🐛</div>
+                                Pest Detections
+                            </div>
+                            <span class="section-count">${history.pest_detections.length}</span>
+                        </div>
+                        ${history.pest_detections.map(pest => `
+                            <div class="record-card">
+                                <div class="record-header">
+                                    <div class="record-id">${pest.detection_id}</div>
+                                    <div class="record-time">${new Date(pest.timestamp).toLocaleString()}</div>
+                                </div>
+                                <div class="record-content">
+                                    <div class="record-item">
+                                        <div class="label">Predicted Pest</div>
+                                        <div class="value">${pest.predicted_pest.replace('_', ' ').toUpperCase()}</div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Risk Level</div>
+                                        <div class="value">
+                                            <span class="badge badge-${pest.risk_level.toLowerCase()}">${pest.risk_level}</span>
+                                        </div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Confidence</div>
+                                        <div class="value">${(pest.confidence * 100).toFixed(1)}%</div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Severity Score</div>
+                                        <div class="value">${(pest.severity_score * 100).toFixed(1)}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Market Predictions
+            if (history.market_predictions && history.market_predictions.length > 0) {
+                content += `
+                    <div class="data-section">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <div class="section-icon" style="background: linear-gradient(135deg, var(--sun-yellow), #ca8a04);">💰</div>
+                                Market Predictions
+                            </div>
+                            <span class="section-count">${history.market_predictions.length}</span>
+                        </div>
+                        ${history.market_predictions.map(market => `
+                            <div class="record-card">
+                                <div class="record-header">
+                                    <div class="record-id">${market.prediction_id}</div>
+                                    <div class="record-time">${new Date(market.timestamp).toLocaleString()}</div>
+                                </div>
+                                <div class="record-content">
+                                    <div class="record-item">
+                                        <div class="label">Predicted Price</div>
+                                        <div class="value">${market.currency} ${market.predicted_price.toLocaleString()}</div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Market Outlook</div>
+                                        <div class="value">
+                                            <span class="badge badge-${market.market_analysis?.outlook.toLowerCase()}">${market.market_analysis?.outlook}</span>
+                                        </div>
+                                    </div>
+                                    <div class="record-item">
+                                        <div class="label">Confidence</div>
+                                        <div class="value">${(market.confidence * 100).toFixed(1)}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = content;
+        }
+        
+        function showNoData(message) {
+            const container = document.getElementById('dataContent');
+            container.innerHTML = `
+                <div class="no-data">
+                    <div class="no-data-icon">📭</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--ink);">No Data Found</h3>
+                    <p>${message}</p>
+                    <div style="margin-top: 2rem;">
+                        <a href="/analysis" style="
+                            display: inline-block;
+                            background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+                            color: white;
+                            padding: 1rem 2rem;
+                            border-radius: 0.75rem;
+                            text-decoration: none;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        ">Start Your First Analysis</a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load data on page load
+        window.addEventListener('load', loadData);
+
+        // Smooth animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.transform = 'translateY(0)';
+                    entry.target.style.opacity = '1';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements as they're added to the DOM
+        function observeNewElements() {
+            document.querySelectorAll('.record-card, .data-section').forEach(el => {
+                if (!el.dataset.observed) {
+                    el.style.transform = 'translateY(20px)';
+                    el.style.opacity = '0';
+                    el.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+                    observer.observe(el);
+                    el.dataset.observed = 'true';
+                }
+            });
+        }
+
+        // Call after data loads
+        setInterval(observeNewElements, 100);
+    </script>
+    </div>
+
+    <script>
+        // Animation Frames Data - VIVID Farming lifecycle with BRIGHT colors
+        const frames = [
+            { 
+                label: 'Spring Awakening', 
+                bg: '#081b1f',
+                color1: '#0d4f4f',
+                color2: '#1a9a7d',
+                accent: '#10b981',
+                icon: '🌱',
+                elements: 'seeds'
+            },
+            { 
+                label: 'Soil Preparation',
+                bg: '#3d2817',
+                color1: '#8b6f47',
+                color2: '#a8825c',
+                accent: '#d97706',
+                icon: '🌍',
+                elements: 'soil'
+            },
+            { 
+                label: 'Planting Season',
+                bg: '#0a1f3d',
+                color1: '#1a5f8f',
+                color2: '#2a8fbf',
+                accent: '#0ea5e9',
+                icon: '🌊',
+                elements: 'water'
+            },
+            { 
+                label: 'Growth Phase',
+                bg: '#0d3d0d',
+                color1: '#2a7a2a',
+                color2: '#4faf4f',
+                accent: '#22c55e',
+                icon: '🌿',
+                elements: 'leaves'
+            },
+            { 
+                label: 'Peak Season',
+                bg: '#3d3d0d',
+                color1: '#8f8f2a',
+                color2: '#bfbf4f',
+                accent: '#fbbf24',
+                icon: '☀️',
+                elements: 'sun'
+            },
+            { 
+                label: 'Harvest Time',
+                bg: '#5c2e0a',
+                color1: '#c45a1a',
+                color2: '#f59e0b',
+                accent: '#ff9500',
+                icon: '🌾',
+                elements: 'harvest'
+            },
+            { 
+                label: 'Post Harvest',
+                bg: '#2d1f3d',
+                color1: '#7a4fa8',
+                color2: '#a857e8',
+                accent: '#c084fc',
+                icon: '🔄',
+                elements: 'wind'
+            },
+            { 
+                label: 'Rest Period',
+                bg: '#0a1f2d',
+                color1: '#1a5f7a',
+                color2: '#2a9fbf',
+                accent: '#06b6d4',
+                icon: '❄️',
+                elements: 'snow'
+            }
+        ];
+
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let scrollProgress = 0;
+        let time = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 16, g: 185, b: 129 };
+        }
+
+        function lerpColor(c1, c2, t) {
+            return {
+                r: Math.round(c1.r + (c2.r - c1.r) * t),
+                g: Math.round(c1.g + (c2.g - c1.g) * t),
+                b: Math.round(c1.b + (c2.b - c1.b) * t)
+            };
+        }
+
+        function rgbToString(rgb) {
+            return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        }
+
+        function drawBackground() {
+            const frameCount = frames.length;
+            const normalizedScroll = Math.min(scrollProgress, 1);
+            const frameIndex = normalizedScroll * (frameCount - 1);
+            const currentIdx = Math.floor(frameIndex);
+            const nextIdx = Math.min(currentIdx + 1, frameCount - 1);
+            const lerp = frameIndex - currentIdx;
+
+            const current = frames[currentIdx];
+            const next = frames[nextIdx];
+
+            // STRONG background color based on scroll position
+            const bgColor1 = lerpColor(hexToRgb(current.color1), hexToRgb(next.color1), lerp);
+            const bgColor2 = lerpColor(hexToRgb(current.color2), hexToRgb(next.color2), lerp);
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, rgbToString(bgColor1));
+            gradient.addColorStop(0.3, rgbToString(bgColor2));
+            gradient.addColorStop(0.7, rgbToString(bgColor1));
+            gradient.addColorStop(1, rgbToString(bgColor2));
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw LARGE animated elements
+            drawLargeElements(current, next, lerp);
+            drawFloatingShapes(current, next, lerp);
+            drawAnimatedGlows(current, next, lerp);
+        }
+
+        function drawLargeElements(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+            const accentStr = rgbToString(accent);
+
+            time += 0.016; // ~60fps
+
+            ctx.font = 'bold 200px Arial';
+            ctx.fillStyle = accentStr;
+            ctx.globalAlpha = 0.6;
+            ctx.textAlign = 'center';
+            ctx.fillText(current.icon, canvas.width * 0.25, canvas.height * 0.4);
+            ctx.fillText(next.icon, canvas.width * 0.75, canvas.height * 0.6);
+            ctx.globalAlpha = 1;
+
+            // Draw circles based on stage
+            const circleCount = 8 + Math.floor(scrollProgress * 12);
+            for (let i = 0; i < circleCount; i++) {
+                const angle = (time * 0.5 + i * (Math.PI * 2 / circleCount)) % (Math.PI * 2);
+                const radius = 150 + Math.sin(time * 0.3 + i) * 50;
+                const x = canvas.width / 2 + Math.cos(angle) * radius;
+                const y = canvas.height / 2 + Math.sin(angle) * radius;
+                const size = 4 + Math.sin(time + i) * 2;
+
+                ctx.fillStyle = accentStr;
+                ctx.globalAlpha = 0.6 + Math.sin(time * 1.5 + i) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawFloatingShapes(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            const shapeCount = 25;
+            for (let i = 0; i < shapeCount; i++) {
+                const x = (Math.sin(time * 0.2 + i * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                const y = (Math.cos(time * 0.15 + i * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                const size = 8 + Math.sin(time * 2 + i) * 4;
+                const opacity = 0.4 + Math.sin(time + i * 0.3) * 0.25;
+
+                ctx.fillStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw connecting lines
+                if (i % 3 === 0) {
+                    const nextI = (i + 1) % shapeCount;
+                    const nextX = (Math.sin(time * 0.2 + nextI * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                    const nextY = (Math.cos(time * 0.15 + nextI * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                    ctx.strokeStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity * 0.3})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(nextX, nextY);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawAnimatedGlows(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            // Central pulsing glow
+            const pulseSize = 300 + Math.sin(time * 2) * 100;
+            const glowGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, pulseSize);
+            
+            glowGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.6)`);
+            glowGrad.addColorStop(0.3, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.4)`);
+            glowGrad.addColorStop(0.7, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.1)`);
+            glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Corner glows
+            const corners = [
+                { x: 0, y: 0 },
+                { x: canvas.width, y: 0 },
+                { x: 0, y: canvas.height },
+                { x: canvas.width, y: canvas.height }
+            ];
+
+            corners.forEach((corner, i) => {
+                const cornerGrad = ctx.createRadialGradient(corner.x, corner.y, 0, corner.x, corner.y, 500);
+                cornerGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.3)`);
+                cornerGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = cornerGrad;
+                ctx.fillRect(corner.x - 500, corner.y - 500, 1000, 1000);
+            });
+        }
+
+        function onScroll() {
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress = windowHeight > 0 ? window.scrollY / windowHeight : 0;
+        }
+
+        function animate() {
+            drawBackground();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', resizeCanvas);
+
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>

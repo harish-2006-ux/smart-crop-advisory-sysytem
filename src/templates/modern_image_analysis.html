@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Analysis — Smart Agriculture Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0f1c;
+            --panel: #101827;
+            --surface: #1e293b;
+            --ink: #f8fafc;
+            --ink-dim: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --rule: rgba(248,250,252,0.1);
+            --glow: rgba(16,185,129,0.3);
+            --crop-green: #22c55e;
+            --soil-brown: #a16207;
+            --water-blue: #0ea5e9;
+            --sun-yellow: #eab308;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--void);
+        }
+
+        /* Animated Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        /* Content Container */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        /* Header */
+        .header {
+            background: rgba(16, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(248,250,252,0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--ink);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--ink-dim);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .page-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--ink), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Upload Section */
+        .upload-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--accent);
+            border-radius: 1rem;
+            padding: 3rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--crop-green);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 1rem 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--glow);
+        }
+
+        /* Analysis Types */
+        .analysis-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .type-button {
+            padding: 1rem;
+            border: 1px solid var(--rule);
+            border-radius: 0.75rem;
+            background: rgba(16, 24, 39, 0.3);
+            color: var(--ink-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .type-button.active {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent);
+        }
+
+        /* Results */
+        .results-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 3px solid var(--rule);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+    
+    <div class="content">
+        <header class="header">
+            <nav class="nav">
+                <a href="/" class="logo">
+                    <div class="logo-icon">🌾</div>
+                    Smart Agriculture Analytics
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/analysis">Analysis</a></li>
+                    <li><a href="/pest-detection-page">Pest Detection</a></li>
+                    <li><a href="/market-prediction-page">Market</a></li>
+                    <li><a href="/image-analysis-page" style="color: var(--accent);">📷 Image Analysis</a></li>
+                    <li><a href="/data-history-page">History</a></li>
+                    <li><a href="/getting-started" style="background: var(--warning); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem;">📚 Help</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="main">
+            <div class="page-header">
+                <h1 class="page-title">📷 AI Image Analysis</h1>
+                <p>Upload photos of your crops, soil, or farm for instant AI-powered analysis and recommendations</p>
+            </div>
+
+            <div class="upload-card">
+                <form id="imageForm" enctype="multipart/form-data">
+                    <div class="upload-zone" onclick="document.getElementById('imageFile').click()">
+                        <div class="upload-icon">📸</div>
+                        <h3>Drop image here or click to upload</h3>
+                        <p>Support: PNG, JPG, JPEG, GIF, WebP (Max: 16MB)</p>
+                        <input type="file" id="imageFile" name="image" class="file-input" accept="image/*" required>
+                    </div>
+
+                    <div class="analysis-types">
+                        <div class="type-button active" data-type="crop_health">
+                            <h4>🌱 Crop Health</h4>
+                            <p>Assess plant condition</p>
+                        </div>
+                        <div class="type-button" data-type="pest_disease">
+                            <h4>🐛 Pest & Disease</h4>
+                            <p>Detect threats</p>
+                        </div>
+                        <div class="type-button" data-type="soil_condition">
+                            <h4>🌍 Soil Analysis</h4>
+                            <p>Evaluate soil health</p>
+                        </div>
+                        <div class="type-button" data-type="weed_detection">
+                            <h4>🌿 Weed Detection</h4>
+                            <p>Identify unwanted plants</p>
+                        </div>
+                        <div class="type-button" data-type="general">
+                            <h4>🔍 General Farm</h4>
+                            <p>Overall assessment</p>
+                        </div>
+                    </div>
+
+                    <input type="text" name="description" placeholder="Optional: Describe what you're seeing..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--rule); border-radius: 0.5rem; background: rgba(16, 24, 39, 0.3); color: var(--ink); margin: 1rem 0;">
+                    
+                    <button type="submit" class="upload-btn">🔬 Analyze Image</button>
+                </form>
+            </div>
+
+            <div id="resultsCard" class="results-card">
+                <div id="loadingState" class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your image with AI...</p>
+                </div>
+                <div id="resultsContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let selectedAnalysisType = 'crop_health';
+
+        // Analysis type selection
+        document.querySelectorAll('.type-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.type-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                selectedAnalysisType = button.dataset.type;
+            });
+        });
+
+        // File upload handling
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                document.querySelector('.upload-zone h3').textContent = e.target.files[0].name;
+            }
+        });
+
+        // Form submission
+        document.getElementById('imageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('imageFile');
+            if (!fileInput.files[0]) {
+                alert('Please select an image file first');
+                return;
+            }
+
+            // Show results card with loading state
+            const resultsCard = document.getElementById('resultsCard');
+            const loadingState = document.getElementById('loadingState');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            resultsCard.style.display = 'block';
+            loadingState.style.display = 'block';
+            resultsContent.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            formData.append('analysis_type', selectedAnalysisType);
+            formData.append('description', document.querySelector('input[name="description"]').value);
+
+            try {
+                const response = await fetch('/api/image-analysis', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                loadingState.style.display = 'none';
+                resultsContent.style.display = 'block';
+
+                if (result.status === 'success') {
+                    displayResults(result.results, fileInput.files[0]);
+                } else {
+                    resultsContent.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 2rem;"><h3>❌ Analysis Failed</h3><p>${result.error}</p></div>`;
+                }
+            } catch (error) {
+                loadingState.style.display = 'none';
+                resultsContent.style.display = 'block';
+                resultsContent.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 2rem;"><h3>❌ Error</h3><p>Failed to analyze image: ${error.message}</p></div>`;
+            }
+        });
+
+        function displayResults(results, file) {
+            const preview = URL.createObjectURL(file);
+            
+            let html = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div>
+                        <h3>📷 Uploaded Image</h3>
+                        <img src="${preview}" style="width: 100%; border-radius: 0.5rem; margin-top: 1rem;">
+                    </div>
+                    <div>
+                        <h3>🔬 Analysis Results</h3>
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;">
+                            <h4>${results.analysis_type}</h4>
+                            <p>Confidence: ${results.confidence}%</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add specific results based on analysis type
+            if (results.overall_health) {
+                html += `
+                    <div style="background: rgba(16, 24, 39, 0.5); padding: 1.5rem; border-radius: 0.75rem; margin: 1rem 0;">
+                        <h4>🌱 Overall Health: ${results.overall_health.status}</h4>
+                        <p>Score: ${results.overall_health.score}/100</p>
+                    </div>
+                `;
+            }
+
+            if (results.risk_assessment) {
+                html += `
+                    <div style="background: rgba(16, 24, 39, 0.5); padding: 1.5rem; border-radius: 0.75rem; margin: 1rem 0;">
+                        <h4>⚠️ Risk Level: ${results.risk_assessment.level}</h4>
+                        <p>Confidence: ${results.risk_assessment.confidence}%</p>
+                    </div>
+                `;
+            }
+
+            // Add recommendations
+            if (results.recommendations) {
+                html += `
+                    <div style="background: rgba(16, 24, 39, 0.5); padding: 1.5rem; border-radius: 0.75rem; margin: 1rem 0;">
+                        <h4>💡 Recommendations</h4>
+                        <ul style="margin-top: 0.5rem;">
+                            ${results.recommendations.map(rec => `<li style="margin: 0.5rem 0;">${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+
+        // Background animation (same as other pages)
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        // ... [same animation code as other pages] ...
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+    </script>
+</body>
+</html>

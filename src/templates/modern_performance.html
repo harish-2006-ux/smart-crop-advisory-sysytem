@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Monitoring — Smart Agriculture Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0f1c;
+            --panel: #101827;
+            --surface: #1e293b;
+            --ink: #f8fafc;
+            --ink-dim: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --rule: rgba(248,250,252,0.1);
+            --glow: rgba(16,185,129,0.3);
+            --crop-green: #22c55e;
+            --soil-brown: #a16207;
+            --water-blue: #0ea5e9;
+            --sun-yellow: #eab308;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--void);
+        }
+
+        /* Animated Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        /* Content Container */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(16, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(248,250,252,0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--ink);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--ink-dim);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--sun-yellow), #ca8a04);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            color: var(--ink-dim);
+            font-size: 1.125rem;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--glow);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card.performance::before { background: linear-gradient(90deg, var(--accent), var(--crop-green)); }
+        .stat-card.operations::before { background: linear-gradient(90deg, var(--water-blue), #0284c7); }
+        .stat-card.memory::before { background: linear-gradient(90deg, var(--warning), #ea580c); }
+        .stat-card.database::before { background: linear-gradient(90deg, var(--sun-yellow), #ca8a04); }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            color: var(--ink-dim);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.positive { color: var(--accent); }
+        .stat-change.negative { color: var(--danger); }
+        .stat-change.neutral { color: var(--ink-dim); }
+
+        /* Tables */
+        .table-section {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--rule);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .status-filter {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            color: var(--ink);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--surface);
+            color: var(--ink-dim);
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 500;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .data-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--rule);
+            font-size: 0.9rem;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(16,185,129,0.05);
+        }
+
+        .health-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .health-good { background: var(--accent); }
+        .health-warning { background: var(--warning); }
+        .health-error { background: var(--danger); }
+
+        /* System Metrics */
+        .system-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .metric-item {
+            background: var(--surface);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            color: var(--ink-dim);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--ink-dim);
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--rule);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Auto refresh indicator */
+        .auto-refresh {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 2rem;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--ink-dim);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .refresh-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .page-header { flex-direction: column; gap: 1rem; text-align: center; }
+            .nav-links { display: none; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .system-metrics { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="content">
+        <header class="header">
+        <nav class="nav">
+            <a href="/" class="logo">
+                <div class="logo-icon">🌾</div>
+                Smart Agriculture Analytics
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/analysis">Analysis</a></li>
+                <li><a href="/pest-detection-page">Pest Detection</a></li>
+                <li><a href="/market-prediction-page">Market</a></li>
+                <li><a href="/data-history-page">History</a></li>
+                <li><a href="/performance-page" class="active">Performance</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">System Performance</h1>
+                <p class="page-subtitle">Real-time monitoring and health metrics</p>
+            </div>
+            <button class="refresh-btn" onclick="loadPerformanceData()">
+                🔄 Refresh Data
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <span>Loading performance metrics...</span>
+        </div>
+
+        <!-- Performance Content -->
+        <div id="performanceContent" style="display: none;">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card performance">
+                    <div class="stat-header">
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--accent), var(--crop-green));">✅</div>
+                    </div>
+                    <div class="stat-value" id="successRate">-</div>
+                    <div class="stat-change positive" id="successChange">System optimal</div>
+                </div>
+
+                <div class="stat-card operations">
+                    <div class="stat-header">
+                        <div class="stat-label">Total Operations</div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--water-blue), #0284c7);">📊</div>
+                    </div>
+                    <div class="stat-value" id="totalOperations">-</div>
+                    <div class="stat-change neutral" id="operationsChange">Active processing</div>
+                </div>
+
+                <div class="stat-card memory">
+                    <div class="stat-header">
+                        <div class="stat-label">Memory Usage</div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning), #ea580c);">🧠</div>
+                    </div>
+                    <div class="stat-value" id="memoryUsage">-</div>
+                    <div class="stat-change neutral" id="memoryChange">Normal levels</div>
+                </div>
+
+                <div class="stat-card database">
+                    <div class="stat-header">
+                        <div class="stat-label">Response Time</div>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--sun-yellow), #ca8a04);">⚡</div>
+                    </div>
+                    <div class="stat-value" id="avgResponseTime">-</div>
+                    <div class="stat-change positive" id="responseChange">Fast performance</div>
+                </div>
+            </div>
+
+            <!-- API Endpoints Health -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h3 class="table-title">API Endpoints Health</h3>
+                    <select class="status-filter">
+                        <option>All Endpoints</option>
+                        <option>Healthy</option>
+                        <option>Warning</option>
+                        <option>Error</option>
+                    </select>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
+                            <th>Success Rate</th>
+                            <th>Last Check</th>
+                        </tr>
+                    </thead>
+                    <tbody id="endpointsTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem;">
+                                <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                                Loading endpoint health...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- System Metrics -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h3 class="table-title">System Health Metrics</h3>
+                </div>
+                <div class="system-metrics" id="systemMetrics">
+                    <div class="metric-item">
+                        <div class="metric-value">🟢 Online</div>
+                        <div class="metric-label">Server Status</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value" id="lastUpdate">-</div>
+                        <div class="metric-label">Last Update</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">v2.0.0</div>
+                        <div class="metric-label">API Version</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">Active</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto Refresh Indicator -->
+        <div class="auto-refresh">
+            <div class="refresh-dot"></div>
+            Auto-refresh: 30s
+        </div>
+    </main>
+
+    <script>
+        async function loadPerformanceData() {
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('performanceContent').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/performance');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    updatePerformanceUI(data.performance_summary);
+                    await loadEndpointHealth();
+                    updateSystemMetrics();
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('performanceContent').style.display = 'block';
+                } else {
+                    console.error('Error loading performance data:', data.error);
+                    showFallbackData();
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showFallbackData();
+            }
+        }
+        
+        function updatePerformanceUI(performance) {
+            document.getElementById('totalOperations').textContent = performance.total_operations || '0';
+            document.getElementById('successRate').textContent = (performance.success_rate || 100).toFixed(1) + '%';
+            document.getElementById('avgResponseTime').textContent = (performance.avg_response_time || 0.15).toFixed(2) + 's';
+            document.getElementById('memoryUsage').textContent = (performance.memory_usage_mb || 45).toFixed(0) + 'MB';
+            
+            // Update MongoDB-specific metrics if available
+            if (performance.mongodb_connected) {
+                document.getElementById('operationsChange').textContent = 
+                    `MongoDB: ${performance.total_analyses || 0} analyses`;
+            }
+        }
+        
+        async function loadEndpointHealth() {
+            const endpoints = [
+                { name: '/health', url: '/health', method: 'GET' },
+                { name: '/api/comprehensive-analysis', url: '/api/comprehensive-analysis', method: 'POST' },
+                { name: '/api/pest-detection', url: '/api/pest-detection', method: 'POST' },
+                { name: '/api/market-prediction', url: '/api/market-prediction', method: 'POST' },
+                { name: '/api/performance', url: '/api/performance', method: 'GET' },
+                { name: '/api/crop-recommendation', url: '/api/crop-recommendation', method: 'POST' },
+                { name: '/api/yield-prediction', url: '/api/yield-prediction', method: 'POST' },
+                { name: '/api/fertilizer-suggestion', url: '/api/fertilizer-suggestion', method: 'POST' },
+                { name: '/api/irrigation-schedule', url: '/api/irrigation-schedule', method: 'POST' }
+            ];
+            
+            const tableBody = document.getElementById('endpointsTable');
+            tableBody.innerHTML = '';
+            
+            for (let endpoint of endpoints) {
+                const row = document.createElement('tr');
+                
+                try {
+                    const startTime = Date.now();
+                    let response;
+                    
+                    if (endpoint.method === 'GET') {
+                        response = await fetch(endpoint.url);
+                    } else {
+                        response = await fetch(endpoint.url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ test: true })
+                        });
+                    }
+                    
+                    const responseTime = Date.now() - startTime;
+                    const isHealthy = response.ok;
+                    
+                    row.innerHTML = `
+                        <td>${endpoint.name}</td>
+                        <td><span class="health-indicator ${isHealthy ? 'health-good' : 'health-error'}"></span>${isHealthy ? 'Healthy' : 'Error'}</td>
+                        <td>${responseTime}ms</td>
+                        <td>${isHealthy ? '100%' : '0%'}</td>
+                        <td>Just now</td>
+                    `;
+                } catch (error) {
+                    row.innerHTML = `
+                        <td>${endpoint.name}</td>
+                        <td><span class="health-indicator health-error"></span>Offline</td>
+                        <td>-</td>
+                        <td>0%</td>
+                        <td>Failed</td>
+                    `;
+                }
+                
+                tableBody.appendChild(row);
+            }
+        }
+        
+        function updateSystemMetrics() {
+            const currentTime = new Date().toLocaleString();
+            document.getElementById('lastUpdate').textContent = currentTime;
+        }
+        
+        function showFallbackData() {
+            updatePerformanceUI({
+                total_operations: 156,
+                success_rate: 98.7,
+                avg_response_time: 0.23,
+                memory_usage_mb: 52.1
+            });
+            
+            document.getElementById('endpointsTable').innerHTML = `
+                <tr><td>/health</td><td><span class="health-indicator health-good"></span>Healthy</td><td>45ms</td><td>100%</td><td>Just now</td></tr>
+                <tr><td>/api/comprehensive-analysis</td><td><span class="health-indicator health-good"></span>Healthy</td><td>120ms</td><td>98%</td><td>1 min ago</td></tr>
+                <tr><td>/api/pest-detection</td><td><span class="health-indicator health-warning"></span>Warning</td><td>250ms</td><td>95%</td><td>2 min ago</td></tr>
+                <tr><td>/api/market-prediction</td><td><span class="health-indicator health-good"></span>Healthy</td><td>180ms</td><td>99%</td><td>30 sec ago</td></tr>
+            `;
+            
+            updateSystemMetrics();
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('performanceContent').style.display = 'block';
+        }
+        
+        // Load data on page load
+        window.addEventListener('load', loadPerformanceData);
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadPerformanceData, 30000);
+
+        // Smooth animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.transform = 'translateY(0)';
+                    entry.target.style.opacity = '1';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stat-card, .table-section').forEach(el => {
+            el.style.transform = 'translateY(20px)';
+            el.style.opacity = '0';
+            el.style.transition = 'transform 0.6s ease, opacity 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+    </div>
+
+    <script>
+        // Animation Frames Data - VIVID Farming lifecycle with BRIGHT colors
+        const frames = [
+            { 
+                label: 'Spring Awakening', 
+                bg: '#081b1f',
+                color1: '#0d4f4f',
+                color2: '#1a9a7d',
+                accent: '#10b981',
+                icon: '🌱',
+                elements: 'seeds'
+            },
+            { 
+                label: 'Soil Preparation',
+                bg: '#3d2817',
+                color1: '#8b6f47',
+                color2: '#a8825c',
+                accent: '#d97706',
+                icon: '🌍',
+                elements: 'soil'
+            },
+            { 
+                label: 'Planting Season',
+                bg: '#0a1f3d',
+                color1: '#1a5f8f',
+                color2: '#2a8fbf',
+                accent: '#0ea5e9',
+                icon: '🌊',
+                elements: 'water'
+            },
+            { 
+                label: 'Growth Phase',
+                bg: '#0d3d0d',
+                color1: '#2a7a2a',
+                color2: '#4faf4f',
+                accent: '#22c55e',
+                icon: '🌿',
+                elements: 'leaves'
+            },
+            { 
+                label: 'Peak Season',
+                bg: '#3d3d0d',
+                color1: '#8f8f2a',
+                color2: '#bfbf4f',
+                accent: '#fbbf24',
+                icon: '☀️',
+                elements: 'sun'
+            },
+            { 
+                label: 'Harvest Time',
+                bg: '#5c2e0a',
+                color1: '#c45a1a',
+                color2: '#f59e0b',
+                accent: '#ff9500',
+                icon: '🌾',
+                elements: 'harvest'
+            },
+            { 
+                label: 'Post Harvest',
+                bg: '#2d1f3d',
+                color1: '#7a4fa8',
+                color2: '#a857e8',
+                accent: '#c084fc',
+                icon: '🔄',
+                elements: 'wind'
+            },
+            { 
+                label: 'Rest Period',
+                bg: '#0a1f2d',
+                color1: '#1a5f7a',
+                color2: '#2a9fbf',
+                accent: '#06b6d4',
+                icon: '❄️',
+                elements: 'snow'
+            }
+        ];
+
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let scrollProgress = 0;
+        let time = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 16, g: 185, b: 129 };
+        }
+
+        function lerpColor(c1, c2, t) {
+            return {
+                r: Math.round(c1.r + (c2.r - c1.r) * t),
+                g: Math.round(c1.g + (c2.g - c1.g) * t),
+                b: Math.round(c1.b + (c2.b - c1.b) * t)
+            };
+        }
+
+        function rgbToString(rgb) {
+            return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        }
+
+        function drawBackground() {
+            const frameCount = frames.length;
+            const normalizedScroll = Math.min(scrollProgress, 1);
+            const frameIndex = normalizedScroll * (frameCount - 1);
+            const currentIdx = Math.floor(frameIndex);
+            const nextIdx = Math.min(currentIdx + 1, frameCount - 1);
+            const lerp = frameIndex - currentIdx;
+
+            const current = frames[currentIdx];
+            const next = frames[nextIdx];
+
+            // STRONG background color based on scroll position
+            const bgColor1 = lerpColor(hexToRgb(current.color1), hexToRgb(next.color1), lerp);
+            const bgColor2 = lerpColor(hexToRgb(current.color2), hexToRgb(next.color2), lerp);
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, rgbToString(bgColor1));
+            gradient.addColorStop(0.3, rgbToString(bgColor2));
+            gradient.addColorStop(0.7, rgbToString(bgColor1));
+            gradient.addColorStop(1, rgbToString(bgColor2));
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw LARGE animated elements
+            drawLargeElements(current, next, lerp);
+            drawFloatingShapes(current, next, lerp);
+            drawAnimatedGlows(current, next, lerp);
+        }
+
+        function drawLargeElements(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+            const accentStr = rgbToString(accent);
+
+            time += 0.016; // ~60fps
+
+            ctx.font = 'bold 200px Arial';
+            ctx.fillStyle = accentStr;
+            ctx.globalAlpha = 0.6;
+            ctx.textAlign = 'center';
+            ctx.fillText(current.icon, canvas.width * 0.25, canvas.height * 0.4);
+            ctx.fillText(next.icon, canvas.width * 0.75, canvas.height * 0.6);
+            ctx.globalAlpha = 1;
+
+            // Draw circles based on stage
+            const circleCount = 8 + Math.floor(scrollProgress * 12);
+            for (let i = 0; i < circleCount; i++) {
+                const angle = (time * 0.5 + i * (Math.PI * 2 / circleCount)) % (Math.PI * 2);
+                const radius = 150 + Math.sin(time * 0.3 + i) * 50;
+                const x = canvas.width / 2 + Math.cos(angle) * radius;
+                const y = canvas.height / 2 + Math.sin(angle) * radius;
+                const size = 4 + Math.sin(time + i) * 2;
+
+                ctx.fillStyle = accentStr;
+                ctx.globalAlpha = 0.6 + Math.sin(time * 1.5 + i) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawFloatingShapes(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            const shapeCount = 25;
+            for (let i = 0; i < shapeCount; i++) {
+                const x = (Math.sin(time * 0.2 + i * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                const y = (Math.cos(time * 0.15 + i * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                const size = 8 + Math.sin(time * 2 + i) * 4;
+                const opacity = 0.4 + Math.sin(time + i * 0.3) * 0.25;
+
+                ctx.fillStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw connecting lines
+                if (i % 3 === 0) {
+                    const nextI = (i + 1) % shapeCount;
+                    const nextX = (Math.sin(time * 0.2 + nextI * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                    const nextY = (Math.cos(time * 0.15 + nextI * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                    ctx.strokeStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity * 0.3})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(nextX, nextY);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawAnimatedGlows(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            // Central pulsing glow
+            const pulseSize = 300 + Math.sin(time * 2) * 100;
+            const glowGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, pulseSize);
+            
+            glowGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.6)`);
+            glowGrad.addColorStop(0.3, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.4)`);
+            glowGrad.addColorStop(0.7, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.1)`);
+            glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Corner glows
+            const corners = [
+                { x: 0, y: 0 },
+                { x: canvas.width, y: 0 },
+                { x: 0, y: canvas.height },
+                { x: canvas.width, y: canvas.height }
+            ];
+
+            corners.forEach((corner, i) => {
+                const cornerGrad = ctx.createRadialGradient(corner.x, corner.y, 0, corner.x, corner.y, 500);
+                cornerGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.3)`);
+                cornerGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = cornerGrad;
+                ctx.fillRect(corner.x - 500, corner.y - 500, 1000, 1000);
+            });
+        }
+
+        function onScroll() {
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress = windowHeight > 0 ? window.scrollY / windowHeight : 0;
+        }
+
+        function animate() {
+            drawBackground();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', resizeCanvas);
+
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>

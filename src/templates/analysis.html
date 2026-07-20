@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Analysis - Smart Agriculture</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .navbar h1 { font-size: 24px; }
+        .navbar a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: all 0.3s; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        .form-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: #333; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .results { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: none; }
+        .result-section { margin-bottom: 25px; padding: 20px; border-left: 4px solid #667eea; background: #f8f9ff; border-radius: 5px; }
+        .result-section h3 { color: #667eea; margin-bottom: 15px; }
+        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .result-item { background: white; padding: 15px; border-radius: 5px; }
+        .result-item .label { color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
+        .result-item .value { color: #333; font-size: 18px; font-weight: 600; }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🔬 Comprehensive Analysis</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/pest-detection-page">Pest Detection</a>
+        </nav>
+    </div>
+    
+    <div class="container">
+        <div class="form-card">
+            <h2>Enter Farm Parameters</h2>
+            <p>Provide your farm's soil and weather conditions for comprehensive analysis</p>
+            
+            <form id="analysisForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nitrogen (N)</label>
+                        <input type="number" name="nitrogen" value="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phosphorus (P)</label>
+                        <input type="number" name="phosphorus" value="30" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Potassium (K)</label>
+                        <input type="number" name="potassium" value="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Temperature (°C)</label>
+                        <input type="number" name="temperature" value="22" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Humidity (%)</label>
+                        <input type="number" name="humidity" value="65" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Rainfall (mm)</label>
+                        <input type="number" name="rainfall_mm" value="12" required>
+                    </div>
+                    <div class="form-group">
+                        <label>pH Level</label>
+                        <input type="number" step="0.1" name="ph" value="6.8" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Crop Type</label>
+                        <select name="crop" required>
+                            <option value="wheat">Wheat</option>
+                            <option value="rice">Rice</option>
+                            <option value="corn">Corn</option>
+                            <option value="soybean">Soybean</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Run Analysis</button>
+            </form>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Running comprehensive analysis...</p>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>Analysis Results</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/comprehensive-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayResults(result.analysis);
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+        });
+        
+        function displayResults(analysis) {
+            const container = document.getElementById('resultsContent');
+            
+            container.innerHTML = `
+                <div class="result-section">
+                    <h3>🌱 Crop Recommendations</h3>
+                    <div class="result-grid">
+                        ${analysis.recommendations.crops.map(crop => `
+                            <div class="result-item">
+                                <div class="label">#${crop.rank} Recommendation</div>
+                                <div class="value">${crop.crop.toUpperCase()}</div>
+                                <div class="label">Score: ${(crop.suitability_score * 100).toFixed(1)}%</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>📈 Yield Prediction</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">Predicted Yield</div>
+                            <div class="value">${analysis.predictions.yield.predicted_yield.toFixed(1)} kg/ha</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Confidence</div>
+                            <div class="value">${(analysis.predictions.yield.confidence_score * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>💰 Market Prediction</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">Expected Price</div>
+                            <div class="value">${analysis.predictions.market_price.predicted_price} ${analysis.predictions.market_price.unit}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Market Outlook</div>
+                            <div class="value">${analysis.predictions.market_price.outlook}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>🌿 Fertilizer Suggestions</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">NPK Ratio</div>
+                            <div class="value">${analysis.suggestions.fertilizer.npk_ratio}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Total Required</div>
+                            <div class="value">${analysis.suggestions.fertilizer.total_kg_per_ha} kg/ha</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>💧 Irrigation Schedule</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">Urgency</div>
+                            <div class="value">${analysis.suggestions.irrigation.urgency}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Next Irrigation</div>
+                            <div class="value">${analysis.suggestions.irrigation.interval_days} days</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Water Volume</div>
+                            <div class="value">${analysis.suggestions.irrigation.water_volume_mm} mm</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>🐛 Pest Risk Assessment</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label">Predicted Pest</div>
+                            <div class="value">${analysis.risk_assessment.pests.predicted_pest.toUpperCase()}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Risk Level</div>
+                            <div class="value">${analysis.risk_assessment.pests.risk_level}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Severity Score</div>
+                            <div class="value">${(analysis.risk_assessment.pests.severity_score * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

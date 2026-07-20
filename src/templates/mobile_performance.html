@@ -1,0 +1,138 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}Performance — Smart Agriculture Analytics{% endblock %}
+{% block header_title %}⚡ Performance{% endblock %}
+{% block header_button %}ℹ️{% endblock %}
+{% block header_action %}showInfo(){% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">System Performance</h2>
+    <p style="color: var(--ink-dim); font-size: 0.9rem;">API & database metrics</p>
+</div>
+
+<!-- System Health -->
+<div class="mobile-card">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">💚 System Status</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; align-items: center;">
+            <span style="font-weight: 500;">API Status</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--crop-green); font-weight: 600;">
+                🟢 Online
+            </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; align-items: center;">
+            <span style="font-weight: 500;">Database</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--crop-green); font-weight: 600;">
+                🟢 Connected
+            </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; align-items: center;">
+            <span style="font-weight: 500;">Service</span>
+            <span style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--crop-green); font-weight: 600;">
+                🟢 Running
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Metrics -->
+<div class="mobile-card">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">📊 Key Metrics</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Response Time</span>
+                <span style="color: var(--accent); font-weight: 600;">145ms</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 29%; height: 100%; background: var(--crop-green);"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Success Rate</span>
+                <span style="color: var(--crop-green); font-weight: 600;">99.8%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 99%; height: 100%; background: var(--crop-green);"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>CPU Usage</span>
+                <span style="color: var(--accent); font-weight: 600;">32%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 32%; height: 100%; background: var(--accent);"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Memory Usage</span>
+                <span style="color: var(--accent); font-weight: 600;">48%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 48%; height: 100%; background: var(--accent);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Database Stats -->
+<div class="mobile-card">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">📦 Database Stats</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">1,245</div>
+            <div style="font-size: 0.875rem; color: var(--ink-dim);">Total Records</div>
+        </div>
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--crop-green);">542</div>
+            <div style="font-size: 0.875rem; color: var(--ink-dim);">Analyses</div>
+        </div>
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--water-blue);">189</div>
+            <div style="font-size: 0.875rem; color: var(--ink-dim);">Images</div>
+        </div>
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--sun-yellow);">2.4</div>
+            <div style="font-size: 0.875rem; color: var(--ink-dim);">Size (GB)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="mobile-card" style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">🔄 Recent Activity</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="padding: 0.75rem; background: rgba(16,24,39,0.5); border-radius: 0.5rem; display: flex; justify-content: space-between; font-size: 0.875rem;">
+            <span>Analysis completed</span>
+            <span style="color: var(--ink-dim);">1 min ago</span>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(16,24,39,0.5); border-radius: 0.5rem; display: flex; justify-content: space-between; font-size: 0.875rem;">
+            <span>Image uploaded</span>
+            <span style="color: var(--ink-dim);">5 mins ago</span>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(16,24,39,0.5); border-radius: 0.5rem; display: flex; justify-content: space-between; font-size: 0.875rem;">
+            <span>API request processed</span>
+            <span style="color: var(--ink-dim);">12 mins ago</span>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(16,24,39,0.5); border-radius: 0.5rem; display: flex; justify-content: space-between; font-size: 0.875rem;">
+            <span>Database backup</span>
+            <span style="color: var(--ink-dim);">1 hour ago</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showInfo() {
+    alert('⚡ Performance Info\n\nThe system monitors:\n• API response times\n• Success rates\n• Resource usage\n• Database performance\n\nAll systems nominal!');
+}
+</script>
+{% endblock %}

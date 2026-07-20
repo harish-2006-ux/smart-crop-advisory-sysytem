@@ -1,0 +1,140 @@
+{% extends "mobile_base.html" %}
+
+{% block title %}Market Prediction — Smart Agriculture Analytics{% endblock %}
+{% block header_title %}💹 Market Prices{% endblock %}
+{% block header_button %}📊{% endblock %}
+{% block header_action %}showChart(){% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Market Intelligence</h2>
+    <p style="color: var(--ink-dim); font-size: 0.9rem;">Price predictions and trends</p>
+</div>
+
+<!-- Current Prices -->
+<div class="mobile-card">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">💰 Today's Prices</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--ink-dim);">Wheat</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">₹2,450/qt</div>
+            </div>
+            <div style="color: var(--crop-green); font-weight: 700; text-align: right;">
+                ↗ +5.2%<br><span style="font-size: 0.75rem; color: var(--ink-dim);">+₹122</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--ink-dim);">Rice</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">₹2,100/qt</div>
+            </div>
+            <div style="color: var(--danger); font-weight: 700; text-align: right;">
+                ↘ -2.1%<br><span style="font-size: 0.75rem; color: var(--ink-dim);">-₹45</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--ink-dim);">Corn</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">₹1,850/qt</div>
+            </div>
+            <div style="color: var(--crop-green); font-weight: 700; text-align: right;">
+                ↗ +0.8%<br><span style="font-size: 0.75rem; color: var(--ink-dim);">+₹15</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--ink-dim);">Cotton</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">₹4,500/qt</div>
+            </div>
+            <div style="color: var(--crop-green); font-weight: 700; text-align: right;">
+                ↗ +3.2%<br><span style="font-size: 0.75rem; color: var(--ink-dim);">+₹140</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forecast -->
+<div class="mobile-card">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">🔮 7-Day Forecast</h3>
+    <div style="padding: 1rem; background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,197,94,0.1)); border-radius: 0.75rem; border-left: 4px solid var(--accent);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <div>
+                <div style="font-size: 0.875rem; color: var(--ink-dim);">Wheat Forecast</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--crop-green);">₹2,550</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.875rem; color: var(--ink-dim);">Outlook</div>
+                <div style="font-size: 1rem; font-weight: 600; color: var(--accent);">📈 BULLISH</div>
+            </div>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--ink-dim);">Expected price increase due to supply constraints</p>
+    </div>
+</div>
+
+<!-- Market Analysis -->
+<div class="mobile-card">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">📊 Market Analysis</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-weight: 500;">Supply Level</span>
+                <span style="color: var(--warning); font-weight: 600;">MODERATE</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 65%; height: 100%; background: var(--warning);"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-weight: 500;">Demand Level</span>
+                <span style="color: var(--crop-green); font-weight: 600;">HIGH</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 85%; height: 100%; background: var(--crop-green);"></div>
+            </div>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(16,24,39,0.5); border-radius: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-weight: 500;">Market Volatility</span>
+                <span style="color: var(--water-blue); font-weight: 600;">MODERATE</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(16,24,39,0.5); border-radius: 3px; overflow: hidden;">
+                <div style="width: 55%; height: 100%; background: var(--water-blue);"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tips -->
+<div class="mobile-card" style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem; color: var(--accent);">💡 Trading Tips</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="padding: 0.75rem; background: rgba(16,185,129,0.1); border-left: 3px solid var(--accent); border-radius: 0.5rem;">
+            <div style="font-weight: 500; margin-bottom: 0.25rem;">🎯 Best Time to Sell</div>
+            <p style="font-size: 0.875rem; color: var(--ink-dim);">Wheat prices expected to peak next week</p>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(245,158,11,0.1); border-left: 3px solid var(--warning); border-radius: 0.5rem;">
+            <div style="font-weight: 500; margin-bottom: 0.25rem;">⚠️ Watch Out</div>
+            <p style="font-size: 0.875rem; color: var(--ink-dim);">Rain forecast may affect market prices</p>
+        </div>
+        <div style="padding: 0.75rem; background: rgba(14,165,233,0.1); border-left: 3px solid var(--water-blue); border-radius: 0.5rem;">
+            <div style="font-weight: 500; margin-bottom: 0.25rem;">📢 Market News</div>
+            <p style="font-size: 0.875rem; color: var(--ink-dim);">New export contract announced today</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showChart() {
+    alert('📊 Price Trends\n\nWeek 1: ₹2,450\nWeek 2: ₹2,480\nWeek 3: ₹2,520 (projected)\nWeek 4: ₹2,550 (projected)\n\nUpward trend expected');
+}
+</script>
+{% endblock %}

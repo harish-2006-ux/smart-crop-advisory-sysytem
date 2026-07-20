@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pest Detection — Smart Agriculture Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0f1c;
+            --panel: #101827;
+            --surface: #1e293b;
+            --ink: #f8fafc;
+            --ink-dim: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --rule: rgba(248,250,252,0.1);
+            --glow: rgba(16,185,129,0.3);
+            --crop-green: #22c55e;
+            --soil-brown: #a16207;
+            --water-blue: #0ea5e9;
+            --sun-yellow: #eab308;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--void);
+        }
+
+        /* Animated Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        /* Content Container */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(16, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(248,250,252,0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--ink);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--ink-dim);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--accent);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--warning), #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            color: var(--ink-dim);
+            font-size: 1.25rem;
+            max-width: 60ch;
+            margin: 0 auto;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--warning), #ea580c, var(--danger));
+        }
+
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: linear-gradient(135deg, var(--warning), #ea580c);
+        }
+
+        .section-description {
+            color: var(--ink-dim);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--ink);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .label-icon {
+            font-size: 0.8rem;
+        }
+
+        .form-input, .form-select {
+            background: var(--surface);
+            border: 1px solid var(--rule);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: var(--ink);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--warning);
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.3);
+        }
+
+        /* Submit Button */
+        .submit-section {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--warning), #ea580c);
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            padding: 1.25rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(245,158,11,0.4);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 15, 28, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            width: 4rem;
+            height: 4rem;
+            border: 3px solid var(--rule);
+            border-top: 3px solid var(--warning);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+        }
+
+        .results-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .results-card.high { border-left: 4px solid var(--danger); }
+        .results-card.medium { border-left: 4px solid var(--warning); }
+        .results-card.low { border-left: 4px solid var(--accent); }
+
+        .pest-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .pest-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--warning), #ea580c);
+        }
+
+        .pest-info h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: capitalize;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .risk-high { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .risk-medium { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .risk-low { background: rgba(16,185,129,0.2); color: var(--accent); }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-item {
+            background: var(--surface);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--warning), #ea580c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            color: var(--ink-dim);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .recommendations {
+            margin-top: 2rem;
+        }
+
+        .recommendations h4 {
+            color: var(--ink);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendations-list li {
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .recommendation-icon {
+            color: var(--warning);
+            font-size: 1.1rem;
+            margin-top: 0.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .form-card { padding: 2rem; }
+            .nav-links { display: none; }
+            .form-grid { grid-template-columns: 1fr; }
+            .page-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="content">
+        <header class="header">
+        <nav class="nav">
+            <a href="/" class="logo">
+                <div class="logo-icon">🌾</div>
+                Smart Agriculture Analytics
+            </a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/analysis">Analysis</a></li>
+                <li><a href="/pest-detection-page" class="active">Pest Detection</a></li>
+                <li><a href="/market-prediction-page">Market</a></li>
+                <li><a href="/data-history-page">History</a></li>
+                <li><a href="/performance-page">Performance</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div id="formSection">
+            <div class="page-header">
+                <h1 class="page-title">AI Pest Detection</h1>
+                <p class="page-subtitle">Early warning system for crop threats using environmental data analysis with actionable treatment recommendations</p>
+            </div>
+
+            <form id="pestForm" class="form-card">
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <div class="section-icon">🌤️</div>
+                        Environmental Conditions
+                    </h2>
+                    <p class="section-description">Provide current environmental parameters to assess pest risk levels</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">🌡️</span>
+                                Temperature (°C)
+                            </label>
+                            <input type="number" name="temperature" class="form-input" value="25" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">💧</span>
+                                Humidity (%)
+                            </label>
+                            <input type="number" name="humidity" class="form-input" value="75" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">☔</span>
+                                Rainfall (mm)
+                            </label>
+                            <input type="number" name="rainfall_mm" class="form-input" value="15" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">🌾</span>
+                                Crop Type
+                            </label>
+                            <select name="crop" class="form-select" required>
+                                <option value="wheat">🌾 Wheat</option>
+                                <option value="rice">🍚 Rice</option>
+                                <option value="corn">🌽 Corn</option>
+                                <option value="cotton">🌿 Cotton</option>
+                                <option value="soybean">🫘 Soybean</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">🌱</span>
+                                Growth Stage
+                            </label>
+                            <select name="growth_stage" class="form-select" required>
+                                <option value="seedling">🌱 Seedling</option>
+                                <option value="vegetative">🍃 Vegetative</option>
+                                <option value="flowering">🌸 Flowering</option>
+                                <option value="maturity">🌾 Maturity</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="label-icon">💧</span>
+                                Soil Moisture (%)
+                            </label>
+                            <input type="number" name="soil_moisture" class="form-input" value="60" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <button type="submit" class="submit-btn">
+                        🐛 Analyze Pest Risk
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="results-section">
+            <div class="page-header">
+                <h1 class="page-title">Pest Risk Assessment</h1>
+                <p class="page-subtitle">AI-powered threat analysis and treatment recommendations</p>
+            </div>
+            <div id="resultsContent">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Analyzing Pest Conditions</div>
+            <div class="loading-subtext">Running threat detection algorithms...</div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('pestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            try {
+                const response = await fetch('/api/pest-detection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayResults(result.detection);
+                    document.getElementById('formSection').style.display = 'none';
+                    document.getElementById('resultsSection').style.display = 'block';
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        });
+        
+        function displayResults(detection) {
+            const container = document.getElementById('resultsContent');
+            const riskClass = detection.risk_level.toLowerCase();
+            
+            container.innerHTML = `
+                <div class="results-card ${riskClass}">
+                    <div class="pest-header">
+                        <div class="pest-icon">🐛</div>
+                        <div class="pest-info">
+                            <h2>${detection.predicted_pest.replace('_', ' ')}</h2>
+                            <span class="risk-badge risk-${riskClass}">${detection.risk_level} Risk</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">${(detection.confidence * 100).toFixed(1)}%</div>
+                            <div class="metric-label">Confidence Level</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${(detection.severity_score * 100).toFixed(1)}%</div>
+                            <div class="metric-label">Severity Score</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${detection.risk_level}</div>
+                            <div class="metric-label">Threat Level</div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendations">
+                        <h4>🛡️ Recommended Actions</h4>
+                        <ul class="recommendations-list">
+                            ${detection.recommendations.map(rec => `
+                                <li>
+                                    <span class="recommendation-icon">⚠️</span>
+                                    ${rec}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            // Add back button
+            const backButton = document.createElement('div');
+            backButton.style.textAlign = 'center';
+            backButton.style.marginTop = '3rem';
+            backButton.innerHTML = `
+                <button onclick="showForm()" style="
+                    background: var(--surface);
+                    color: var(--ink);
+                    border: 1px solid var(--rule);
+                    border-radius: 0.75rem;
+                    padding: 1rem 2rem;
+                    font-size: 0.95rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    margin-right: 1rem;
+                ">← New Detection</button>
+                <button onclick="window.location.href='/data-history-page'" style="
+                    background: linear-gradient(135deg, var(--warning), #ea580c);
+                    color: white;
+                    border: none;
+                    border-radius: 0.75rem;
+                    padding: 1rem 2rem;
+                    font-size: 0.95rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">View All Data →</button>
+            `;
+            container.appendChild(backButton);
+        }
+
+        function showForm() {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('formSection').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    </div>
+
+    <script>
+        // Animation Frames Data - VIVID Farming lifecycle with BRIGHT colors
+        const frames = [
+            { 
+                label: 'Spring Awakening', 
+                bg: '#081b1f',
+                color1: '#0d4f4f',
+                color2: '#1a9a7d',
+                accent: '#10b981',
+                icon: '🌱',
+                elements: 'seeds'
+            },
+            { 
+                label: 'Soil Preparation',
+                bg: '#3d2817',
+                color1: '#8b6f47',
+                color2: '#a8825c',
+                accent: '#d97706',
+                icon: '🌍',
+                elements: 'soil'
+            },
+            { 
+                label: 'Planting Season',
+                bg: '#0a1f3d',
+                color1: '#1a5f8f',
+                color2: '#2a8fbf',
+                accent: '#0ea5e9',
+                icon: '🌊',
+                elements: 'water'
+            },
+            { 
+                label: 'Growth Phase',
+                bg: '#0d3d0d',
+                color1: '#2a7a2a',
+                color2: '#4faf4f',
+                accent: '#22c55e',
+                icon: '🌿',
+                elements: 'leaves'
+            },
+            { 
+                label: 'Peak Season',
+                bg: '#3d3d0d',
+                color1: '#8f8f2a',
+                color2: '#bfbf4f',
+                accent: '#fbbf24',
+                icon: '☀️',
+                elements: 'sun'
+            },
+            { 
+                label: 'Harvest Time',
+                bg: '#5c2e0a',
+                color1: '#c45a1a',
+                color2: '#f59e0b',
+                accent: '#ff9500',
+                icon: '🌾',
+                elements: 'harvest'
+            },
+            { 
+                label: 'Post Harvest',
+                bg: '#2d1f3d',
+                color1: '#7a4fa8',
+                color2: '#a857e8',
+                accent: '#c084fc',
+                icon: '🔄',
+                elements: 'wind'
+            },
+            { 
+                label: 'Rest Period',
+                bg: '#0a1f2d',
+                color1: '#1a5f7a',
+                color2: '#2a9fbf',
+                accent: '#06b6d4',
+                icon: '❄️',
+                elements: 'snow'
+            }
+        ];
+
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let scrollProgress = 0;
+        let time = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 16, g: 185, b: 129 };
+        }
+
+        function lerpColor(c1, c2, t) {
+            return {
+                r: Math.round(c1.r + (c2.r - c1.r) * t),
+                g: Math.round(c1.g + (c2.g - c1.g) * t),
+                b: Math.round(c1.b + (c2.b - c1.b) * t)
+            };
+        }
+
+        function rgbToString(rgb) {
+            return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        }
+
+        function drawBackground() {
+            const frameCount = frames.length;
+            const normalizedScroll = Math.min(scrollProgress, 1);
+            const frameIndex = normalizedScroll * (frameCount - 1);
+            const currentIdx = Math.floor(frameIndex);
+            const nextIdx = Math.min(currentIdx + 1, frameCount - 1);
+            const lerp = frameIndex - currentIdx;
+
+            const current = frames[currentIdx];
+            const next = frames[nextIdx];
+
+            // STRONG background color based on scroll position
+            const bgColor1 = lerpColor(hexToRgb(current.color1), hexToRgb(next.color1), lerp);
+            const bgColor2 = lerpColor(hexToRgb(current.color2), hexToRgb(next.color2), lerp);
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, rgbToString(bgColor1));
+            gradient.addColorStop(0.3, rgbToString(bgColor2));
+            gradient.addColorStop(0.7, rgbToString(bgColor1));
+            gradient.addColorStop(1, rgbToString(bgColor2));
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw LARGE animated elements
+            drawLargeElements(current, next, lerp);
+            drawFloatingShapes(current, next, lerp);
+            drawAnimatedGlows(current, next, lerp);
+        }
+
+        function drawLargeElements(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+            const accentStr = rgbToString(accent);
+
+            time += 0.016; // ~60fps
+
+            ctx.font = 'bold 200px Arial';
+            ctx.fillStyle = accentStr;
+            ctx.globalAlpha = 0.6;
+            ctx.textAlign = 'center';
+            ctx.fillText(current.icon, canvas.width * 0.25, canvas.height * 0.4);
+            ctx.fillText(next.icon, canvas.width * 0.75, canvas.height * 0.6);
+            ctx.globalAlpha = 1;
+
+            // Draw circles based on stage
+            const circleCount = 8 + Math.floor(scrollProgress * 12);
+            for (let i = 0; i < circleCount; i++) {
+                const angle = (time * 0.5 + i * (Math.PI * 2 / circleCount)) % (Math.PI * 2);
+                const radius = 150 + Math.sin(time * 0.3 + i) * 50;
+                const x = canvas.width / 2 + Math.cos(angle) * radius;
+                const y = canvas.height / 2 + Math.sin(angle) * radius;
+                const size = 4 + Math.sin(time + i) * 2;
+
+                ctx.fillStyle = accentStr;
+                ctx.globalAlpha = 0.6 + Math.sin(time * 1.5 + i) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawFloatingShapes(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            const shapeCount = 25;
+            for (let i = 0; i < shapeCount; i++) {
+                const x = (Math.sin(time * 0.2 + i * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                const y = (Math.cos(time * 0.15 + i * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                const size = 8 + Math.sin(time * 2 + i) * 4;
+                const opacity = 0.4 + Math.sin(time + i * 0.3) * 0.25;
+
+                ctx.fillStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw connecting lines
+                if (i % 3 === 0) {
+                    const nextI = (i + 1) % shapeCount;
+                    const nextX = (Math.sin(time * 0.2 + nextI * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                    const nextY = (Math.cos(time * 0.15 + nextI * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                    ctx.strokeStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity * 0.3})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(nextX, nextY);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawAnimatedGlows(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            // Central pulsing glow
+            const pulseSize = 300 + Math.sin(time * 2) * 100;
+            const glowGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, pulseSize);
+            
+            glowGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.6)`);
+            glowGrad.addColorStop(0.3, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.4)`);
+            glowGrad.addColorStop(0.7, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.1)`);
+            glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Corner glows
+            const corners = [
+                { x: 0, y: 0 },
+                { x: canvas.width, y: 0 },
+                { x: 0, y: canvas.height },
+                { x: canvas.width, y: canvas.height }
+            ];
+
+            corners.forEach((corner, i) => {
+                const cornerGrad = ctx.createRadialGradient(corner.x, corner.y, 0, corner.x, corner.y, 500);
+                cornerGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.3)`);
+                cornerGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = cornerGrad;
+                ctx.fillRect(corner.x - 500, corner.y - 500, 1000, 1000);
+            });
+        }
+
+        function onScroll() {
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress = windowHeight > 0 ? window.scrollY / windowHeight : 0;
+        }
+
+        function animate() {
+            drawBackground();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', resizeCanvas);
+
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>

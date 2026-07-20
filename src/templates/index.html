@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Agriculture Analytics - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        
+        .card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .features {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .features h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-item {
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+            border-radius: 5px;
+        }
+        
+        .feature-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .feature-item p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 Smart Agriculture Analytics Platform</h1>
+            <p>End-to-End Big Data Solution for Farmers & Agri-Businesses</p>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>Dashboard</h3>
+                <p>Real-time overview of farm metrics, weather, and predictions</p>
+                <a href="/dashboard" class="btn">View Dashboard</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🔬</div>
+                <h3>Comprehensive Analysis</h3>
+                <p>Analyze all factors affecting your farm in one unified report</p>
+                <a href="/analysis" class="btn">Start Analysis</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🐛</div>
+                <h3>Pest Detection</h3>
+                <p>Identify pest risks and get actionable recommendations</p>
+                <a href="/pest-detection-page" class="btn">Check Pests</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">💰</div>
+                <h3>Market Prediction</h3>
+                <p>Forecast crop prices to optimize your harvest timing</p>
+                <a href="/market-prediction-page" class="btn">View Prices</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Performance</h3>
+                <p>Monitor system health and API performance metrics</p>
+                <a href="/performance-page" class="btn">View Stats</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📚</div>
+                <h3>Data History</h3>
+                <p>View all stored analyses, predictions, and historical data</p>
+                <a href="/data-history-page" class="btn">View History</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📖</div>
+                <h3>Documentation</h3>
+                <p>Learn how to use the platform and understand the data</p>
+                <a href="#features" class="btn">Read Docs</a>
+            </div>
+        </div>
+        
+        <div class="features" id="features">
+            <h2>Platform Features</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <h4>🌤️ Weather Analysis</h4>
+                    <p>Real-time weather data collection and trend analysis for your region</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>🌱 Crop Optimization</h4>
+                    <p>Get personalized crop recommendations based on your soil and climate</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>📈 Yield Prediction</h4>
+                    <p>Advanced ML models predict yield based on historical data and conditions</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>💧 Irrigation Management</h4>
+                    <p>Optimal irrigation schedules to conserve water and maximize yield</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>🐛 Disease & Pest Detection</h4>
+                    <p>Early warning system for diseases and pests affecting your crops</p>
+                </div>
+                
+                <div class="feature-item">
+                    <h4>💰 Market Intelligence</h4>
+                    <p>Price forecasting and market trends for informed selling decisions</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2026 Smart Agriculture Analytics. Empowering Farmers with Data-Driven Decisions.</p>
+        </div>
+    </div>
+</body>
+</html>

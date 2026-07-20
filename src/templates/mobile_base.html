@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AgriAnalytics">
+    <meta name="application-name" content="Smart Agriculture Analytics">
+    <meta name="theme-color" content="#10b981">
+    <meta name="msapplication-TileColor" content="#10b981">
+    <meta name="msapplication-navbutton-color" content="#10b981">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    
+    <!-- iOS specific -->
+    <link rel="apple-touch-icon" href="/static/icons/icon-192x192.png">
+    <link rel="apple-touch-startup-image" href="/static/icons/icon-512x512.png">
+    
+    <!-- Android Chrome -->
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Windows -->
+    <meta name="msapplication-starturl" content="/">
+    
+    <title>{% block title %}Smart Agriculture Analytics{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --void: #0a0f1c;
+            --panel: #101827;
+            --surface: #1e293b;
+            --ink: #f8fafc;
+            --ink-dim: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --rule: rgba(248,250,252,0.1);
+            --glow: rgba(16,185,129,0.3);
+            --crop-green: #22c55e;
+            --soil-brown: #a16207;
+            --water-blue: #0ea5e9;
+            --sun-yellow: #eab308;
+            
+            /* Mobile-specific variables */
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-right: env(safe-area-inset-right);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --safe-area-inset-left: env(safe-area-inset-left);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            position: relative;
+            
+            /* iOS safe areas */
+            padding-top: var(--safe-area-inset-top);
+            padding-right: var(--safe-area-inset-right);
+            padding-bottom: var(--safe-area-inset-bottom);
+            padding-left: var(--safe-area-inset-left);
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--void);
+        }
+
+        /* Mobile navigation */
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(16, 24, 39, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--rule);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0;
+            z-index: 1000;
+            padding-bottom: calc(0.75rem + var(--safe-area-inset-bottom));
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--ink-dim);
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .nav-item:hover {
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Mobile header */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(16, 24, 39, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--rule);
+            padding: 1rem 1.5rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: calc(1rem + var(--safe-area-inset-top));
+        }
+
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .header-action {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .header-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--glow);
+        }
+
+        /* Main content area */
+        .mobile-main {
+            padding: calc(5rem + var(--safe-area-inset-top)) 1rem calc(5rem + var(--safe-area-inset-bottom)) 1rem;
+            min-height: 100vh;
+        }
+
+        /* Touch-friendly components */
+        .touch-button {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            color: white;
+        }
+
+        .btn-primary:hover, .btn-primary:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--glow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--rule);
+        }
+
+        .btn-secondary:hover, .btn-secondary:active {
+            border-color: var(--accent);
+            background: rgba(16,185,129,0.1);
+        }
+
+        /* Card components */
+        .mobile-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-card:active {
+            transform: scale(0.98);
+            border-color: var(--accent);
+        }
+
+        /* Form inputs */
+        .mobile-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--rule);
+            border-radius: 0.75rem;
+            background: rgba(16, 24, 39, 0.3);
+            color: var(--ink);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* PWA install prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: calc(5rem + var(--safe-area-inset-bottom));
+            left: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            color: white;
+            padding: 1rem;
+            border-radius: 1rem;
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .install-prompt.show {
+            display: flex;
+        }
+
+        .install-text {
+            flex: 1;
+        }
+
+        .install-button {
+            background: white;
+            color: var(--accent);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .close-install {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        /* Offline indicator */
+        .offline-banner {
+            position: fixed;
+            top: calc(var(--safe-area-inset-top) + 4rem);
+            left: 1rem;
+            right: 1rem;
+            background: var(--warning);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            font-weight: 500;
+            z-index: 2000;
+            transform: translateY(-100px);
+            transition: transform 0.3s ease;
+        }
+
+        .offline-banner.show {
+            transform: translateY(0);
+        }
+
+        /* Hide on desktop */
+        @media (min-width: 768px) {
+            .mobile-nav, .mobile-header {
+                display: none;
+            }
+            
+            .mobile-main {
+                padding: 2rem;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .mobile-header {
+                padding: 0.75rem 1.5rem;
+            }
+            
+            .mobile-main {
+                padding-top: calc(4rem + var(--safe-area-inset-top));
+            }
+        }
+    </style>
+    
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <h1 class="header-title">{% block header_title %}AgriAnalytics{% endblock %}</h1>
+        <button class="header-action" onclick="{% block header_action %}openMenu(){% endblock %}">
+            {% block header_button %}☰{% endblock %}
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="mobile-main">
+        {% block content %}
+        <!-- Page content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <a href="/" class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+            <div class="nav-icon">🏠</div>
+            <div>Home</div>
+        </a>
+        <a href="/dashboard" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <div class="nav-icon">📊</div>
+            <div>Dashboard</div>
+        </a>
+        <a href="/analysis" class="nav-item {% if request.endpoint == 'analysis_page' %}active{% endif %}">
+            <div class="nav-icon">🔬</div>
+            <div>Analysis</div>
+        </a>
+        <a href="/image-analysis-page" class="nav-item {% if request.endpoint == 'image_analysis_page' %}active{% endif %}">
+            <div class="nav-icon">📷</div>
+            <div>Photo AI</div>
+        </a>
+        <a href="/getting-started" class="nav-item">
+            <div class="nav-icon">📚</div>
+            <div>Help</div>
+        </a>
+    </nav>
+
+    <!-- PWA Install Prompt -->
+    <div id="installPrompt" class="install-prompt">
+        <div class="install-text">
+            <div style="font-weight: 600;">Install App</div>
+            <div style="font-size: 0.875rem; opacity: 0.9;">Get the full mobile experience</div>
+        </div>
+        <button class="install-button" onclick="installApp()">Install</button>
+        <button class="close-install" onclick="closeInstallPrompt()">&times;</button>
+    </div>
+
+    <!-- Offline Banner -->
+    <div id="offlineBanner" class="offline-banner">
+        📡 You're offline - Some features may be limited
+    </div>
+
+    <script>
+        // PWA installation
+        let deferredPrompt;
+        let installPromptElement = document.getElementById('installPrompt');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install prompt after 3 seconds if not already installed
+            if (!localStorage.getItem('installPromptDismissed')) {
+                setTimeout(() => {
+                    installPromptElement.classList.add('show');
+                }, 3000);
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('📱 App installed');
+                        closeInstallPrompt();
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        function closeInstallPrompt() {
+            installPromptElement.classList.remove('show');
+            localStorage.setItem('installPromptDismissed', 'true');
+        }
+
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('🔧 SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('❌ SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Online/offline status
+        function updateOnlineStatus() {
+            const offlineBanner = document.getElementById('offlineBanner');
+            if (navigator.onLine) {
+                offlineBanner.classList.remove('show');
+            } else {
+                offlineBanner.classList.add('show');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // Haptic feedback for touch interactions (if available)
+        function hapticFeedback() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+        }
+
+        // Add haptic feedback to buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.touch-button, .nav-item, .mobile-card').forEach(element => {
+                element.addEventListener('touchstart', hapticFeedback);
+            });
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Virtual keyboard handling
+        function handleViewportChange() {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (window.screen.height - window.innerHeight > 150) {
+                // Keyboard likely open
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover');
+            } else {
+                // Keyboard likely closed
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover');
+            }
+        }
+
+        window.addEventListener('resize', handleViewportChange);
+
+        {% block scripts %}{% endblock %}
+    </script>
+</body>
+</html>

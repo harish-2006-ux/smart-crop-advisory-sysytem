@@ -1,0 +1,241 @@
+version: '3.8'
+
+services:
+  # MongoDB - NoSQL database for real-time data
+  mongodb:
+    image: mongo:6.0
+    container_name: agri-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: agri_analytics
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongodb/init.js:/docker-entrypoint-initdb.d/init.js
+    networks:
+      - agri-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL - Relational database for metadata
+  postgres:
+    image: postgres:15
+    container_name: agri-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: agri_analytics
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - agri-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Hadoop NameNode - Distributed file system master
+  hadoop-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: agri-hadoop-namenode
+    ports:
+      - "50070:50070"
+      - "9000:9000"
+    environment:
+      CLUSTER_NAME: agri_cluster
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      CORE_CONF_hadoop_http_staticuser_user: root
+      CORE_CONF_hadoop_proxyuser_hive_hosts: "*"
+      CORE_CONF_hadoop_proxyuser_hive_groups: "*"
+      HDFS_CONF_dfs_webhdfs_enabled: "true"
+      HDFS_CONF_dfs_permissions_enabled: "false"
+    volumes:
+      - namenode:/hadoop/dfs/name
+    networks:
+      - agri-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:50070"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Hadoop DataNode - Distributed file system worker
+  hadoop-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: agri-hadoop-datanode
+    ports:
+      - "50075:50075"
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      HDFS_CONF_dfs_datanode_data_dir: /hadoop/dfs/data
+      HDFS_CONF_dfs_webhdfs_enabled: "true"
+      HDFS_CONF_dfs_permissions_enabled: "false"
+    volumes:
+      - datanode:/hadoop/dfs/data
+    networks:
+      - agri-network
+    depends_on:
+      - hadoop-namenode
+
+  # Hive Metastore - SQL metadata service
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: agri-hive-metastore
+    ports:
+      - "9083:9083"
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 postgres:5432"
+      DB_DRIVER: org.postgresql.Driver
+      DB_URL: jdbc:postgresql://postgres:5432/agri_analytics
+      DB_USER: admin
+      DB_PASSWD: password
+      HIVE_LOGLEVEL: INFO
+    networks:
+      - agri-network
+    depends_on:
+      - hadoop-namenode
+      - hadoop-datanode
+      - postgres
+
+  # Hive Server - SQL query engine
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: agri-hive-server
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://postgres:5432/agri_analytics"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionDriverName: "org.postgresql.Driver"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName: admin
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword: password
+      HIVE_CONF_hive_metastore_uris: "thrift://hive-metastore:9083"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+    networks:
+      - agri-network
+    depends_on:
+      - hive-metastore
+
+  # Spark Master - Distributed processing master
+  spark-master:
+    image: bde2020/spark-master:2.4.5-hadoop2.7
+    container_name: agri-spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+      - "6066:6066"
+    environment:
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      SPARK_CONF_spark_eventLog_enabled: "true"
+      SPARK_CONF_spark_eventLog_dir: hdfs://namenode:9000/spark-logs
+    networks:
+      - agri-network
+    depends_on:
+      - hadoop-namenode
+
+  # Spark Worker - Distributed processing worker
+  spark-worker:
+    image: bde2020/spark-worker:2.4.5-hadoop2.7
+    container_name: agri-spark-worker
+    ports:
+      - "8081:8081"
+    environment:
+      SPARK_MASTER: spark://spark-master:7077
+      CORE_CONF_fs_defaultFS: hdfs://namenode:9000
+      SPARK_CONF_spark_eventLog_enabled: "true"
+      SPARK_CONF_spark_eventLog_dir: hdfs://namenode:9000/spark-logs
+    networks:
+      - agri-network
+    depends_on:
+      - spark-master
+
+  # Jupyter - Interactive notebook server
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: agri-jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+      SPARK_MASTER: spark://spark-master:7077
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./data:/home/jovyan/data
+    networks:
+      - agri-network
+    depends_on:
+      - spark-master
+    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+
+  # Airflow - Workflow orchestration
+  airflow:
+    image: apache/airflow:2.5.0
+    container_name: agri-airflow
+    ports:
+      - "8070:8080"
+    environment:
+      AIRFLOW_HOME: /airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /airflow/dags
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:password@postgres:5432/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    volumes:
+      - ./airflow/dags:/airflow/dags
+      - ./airflow/logs:/airflow/logs
+      - ./airflow/plugins:/airflow/plugins
+    networks:
+      - agri-network
+    depends_on:
+      - postgres
+    command: >
+      bash -c "
+      airflow db init &&
+      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+      airflow webserver
+      "
+
+  # API Server - Python Flask API
+  api-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: agri-api
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/agri_analytics
+      POSTGRES_URI: postgresql://admin:password@postgres:5432/agri_analytics
+      SPARK_MASTER: spark://spark-master:7077
+      HIVE_HOST: hive-server
+      HIVE_PORT: 10000
+    volumes:
+      - ./src:/app/src
+      - ./data:/app/data
+      - ./models:/app/models
+    networks:
+      - agri-network
+    depends_on:
+      - mongodb
+      - postgres
+      - spark-master
+      - hive-server
+    command: python /app/src/api.py
+
+networks:
+  agri-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  postgres_data:
+  namenode:
+  datanode:

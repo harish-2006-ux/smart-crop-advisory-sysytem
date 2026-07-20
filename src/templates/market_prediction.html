@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Prediction - Smart Agriculture</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .navbar h1 { font-size: 24px; }
+        .navbar a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: all 0.3s; }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+        .form-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; color: #333; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .results { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: none; }
+        .price-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 25px; }
+        .price-value { font-size: 48px; font-weight: bold; margin: 15px 0; }
+        .price-unit { font-size: 18px; opacity: 0.9; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 25px 0; }
+        .market-item { background: #f8f9ff; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; }
+        .market-item .label { color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 8px; }
+        .market-item .value { color: #333; font-size: 20px; font-weight: 600; }
+        .outlook-badge { display: inline-block; padding: 8px 20px; border-radius: 25px; font-weight: 600; margin: 15px 0; }
+        .outlook-bullish { background: #d1f2eb; color: #10b981; }
+        .outlook-bearish { background: #fee2e2; color: #ef4444; }
+        .outlook-stable { background: #e0f2fe; color: #0ea5e9; }
+        .confidence-section { margin: 20px 0; }
+        .confidence-bar { background: #e0e0e0; height: 12px; border-radius: 6px; margin: 10px 0; }
+        .confidence-fill { height: 100%; border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>💰 Market Prediction</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/analysis">Analysis</a>
+            <a href="/pest-detection-page">Pest Detection</a>
+        </nav>
+    </div>
+    
+    <div class="container">
+        <div class="form-card">
+            <h2>Crop Price Prediction</h2>
+            <p>Get market price forecasts to optimize your selling decisions</p>
+            
+            <form id="marketForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Crop Type</label>
+                        <select name="crop" required>
+                            <option value="wheat">Wheat</option>
+                            <option value="rice">Rice</option>
+                            <option value="corn">Corn</option>
+                            <option value="soybean">Soybean</option>
+                            <option value="cotton">Cotton</option>
+                            <option value="sugarcane">Sugarcane</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity (tons)</label>
+                        <input type="number" name="quantity" value="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quality Grade</label>
+                        <select name="quality" required>
+                            <option value="premium">Premium</option>
+                            <option value="standard">Standard</option>
+                            <option value="lower">Lower Grade</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Market Location</label>
+                        <select name="location" required>
+                            <option value="punjab">Punjab</option>
+                            <option value="haryana">Haryana</option>
+                            <option value="uttar_pradesh">Uttar Pradesh</option>
+                            <option value="madhya_pradesh">Madhya Pradesh</option>
+                            <option value="rajasthan">Rajasthan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Forecast Period</label>
+                        <select name="forecast_days" required>
+                            <option value="7">1 Week</option>
+                            <option value="30">1 Month</option>
+                            <option value="90">3 Months</option>
+                            <option value="180">6 Months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Season</label>
+                        <select name="season" required>
+                            <option value="kharif">Kharif (Jun-Oct)</option>
+                            <option value="rabi">Rabi (Nov-Apr)</option>
+                            <option value="summer">Summer (Apr-Jun)</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Predict Market Price</button>
+            </form>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing market conditions...</p>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>Market Price Forecast</h2>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('marketForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/market-prediction', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayResults(result.prediction, data);
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+        });
+        
+        function displayResults(prediction, inputData) {
+            const container = document.getElementById('resultsContent');
+            
+            const outlookClass = prediction.market_analysis.outlook.toLowerCase();
+            
+            container.innerHTML = `
+                <div class="price-card">
+                    <h3>Predicted Price for ${inputData.crop.toUpperCase()}</h3>
+                    <div class="price-value">${prediction.currency} ${prediction.predicted_price.toLocaleString()}</div>
+                    <div class="price-unit">per ${prediction.unit}</div>
+                    <span class="outlook-badge outlook-${outlookClass}">${prediction.market_analysis.outlook} MARKET</span>
+                </div>
+                
+                <div class="confidence-section">
+                    <h3>Prediction Confidence</h3>
+                    <div style="margin: 10px 0;">
+                        <strong>Confidence Level: ${(prediction.confidence * 100).toFixed(1)}%</strong>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" style="width: ${prediction.confidence * 100}%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="market-grid">
+                    <div class="market-item">
+                        <div class="label">vs Historical Average</div>
+                        <div class="value">${prediction.market_analysis.vs_historical_average}</div>
+                    </div>
+                    
+                    <div class="market-item">
+                        <div class="label">Market Volatility</div>
+                        <div class="value">${prediction.market_analysis.volatility}</div>
+                    </div>
+                    
+                    <div class="market-item">
+                        <div class="label">Total Value</div>
+                        <div class="value">${prediction.currency} ${(prediction.predicted_price * parseFloat(inputData.quantity)).toLocaleString()}</div>
+                    </div>
+                    
+                    <div class="market-item">
+                        <div class="label">Forecast Period</div>
+                        <div class="value">${inputData.forecast_days} Days</div>
+                    </div>
+                </div>
+                
+                <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; margin-top: 20px;">
+                    <h4>💡 Market Insights</h4>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        ${prediction.market_analysis.outlook === 'BULLISH' ? 
+                            '<li>Market conditions are favorable for selling</li><li>Prices expected to rise in the forecast period</li><li>Consider holding inventory if storage is available</li>' :
+                            prediction.market_analysis.outlook === 'BEARISH' ?
+                            '<li>Market showing downward pressure</li><li>Consider selling soon to avoid losses</li><li>Look for alternative marketing channels</li>' :
+                            '<li>Market prices are relatively stable</li><li>Good time for planned sales</li><li>Monitor for sudden changes</li>'
+                        }
+                        <li>Quality grade affects final pricing by 5-15%</li>
+                        <li>Regional price variations may apply</li>
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

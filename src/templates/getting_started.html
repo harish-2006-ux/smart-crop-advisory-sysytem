@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getting Started — Smart Agriculture Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #0a0f1c;
+            --panel: #101827;
+            --surface: #1e293b;
+            --ink: #f8fafc;
+            --ink-dim: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --rule: rgba(248,250,252,0.1);
+            --glow: rgba(16,185,129,0.3);
+            --crop-green: #22c55e;
+            --soil-brown: #a16207;
+            --water-blue: #0ea5e9;
+            --sun-yellow: #eab308;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--void);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--void);
+        }
+
+        /* Animated Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 1;
+        }
+
+        /* Content Container */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(16, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(248,250,252,0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--ink);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--ink-dim);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-title {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--ink), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--ink-dim);
+            max-width: 60ch;
+            margin: 0 auto;
+        }
+
+        /* Step Cards */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .step-card {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--ink);
+        }
+
+        .step-card p {
+            color: var(--ink-dim);
+            margin-bottom: 1.5rem;
+        }
+
+        .step-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--accent);
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .step-action:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Quick Tips Section */
+        .quick-tips {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin: 3rem 0;
+        }
+
+        .quick-tips h3 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .tip-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tip-icon {
+            background: var(--accent);
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tip-content h4 {
+            margin-bottom: 0.5rem;
+            color: var(--ink);
+        }
+
+        .tip-content p {
+            color: var(--ink-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Video Tutorial Section */
+        .video-section {
+            background: rgba(16, 24, 39, 0.3);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248,250,252,0.15);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .video-placeholder {
+            background: rgba(16, 24, 39, 0.5);
+            border: 2px dashed rgba(248,250,252,0.3);
+            border-radius: 1rem;
+            padding: 4rem 2rem;
+            margin: 2rem 0;
+        }
+
+        .play-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 5rem;
+            height: 5rem;
+            background: linear-gradient(135deg, var(--accent), var(--crop-green));
+            border-radius: 50%;
+            color: white;
+            font-size: 2rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px var(--glow);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .main {
+                padding: 2rem 1rem;
+            }
+            
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="content">
+        <header class="header">
+            <nav class="nav">
+                <a href="/" class="logo">
+                    <div class="logo-icon">🌾</div>
+                    Smart Agriculture Analytics
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/analysis">Analysis</a></li>
+                    <li><a href="/pest-detection-page">Pest Detection</a></li>
+                    <li><a href="/market-prediction-page">Market</a></li>
+                    <li><a href="/data-history-page">History</a></li>
+                    <li><a href="/performance-page">Performance</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="main">
+            <div class="page-header">
+                <h1 class="page-title">🚀 Getting Started</h1>
+                <p class="page-subtitle">Your complete guide to using Smart Agriculture Analytics for better farming decisions</p>
+            </div>
+
+            <!-- Step-by-Step Guide -->
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>📊 Check Your Dashboard</h3>
+                    <p>Start by viewing your farm overview. The dashboard shows key metrics, recent analyses, and system status. It's your mission control center.</p>
+                    <a href="/dashboard" class="step-action">
+                        View Dashboard →
+                    </a>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>🔬 Run Your First Analysis</h3>
+                    <p>Input your soil conditions and farm details to get AI-powered recommendations for crops, fertilizers, and irrigation.</p>
+                    <a href="/analysis" class="step-action">
+                        Start Analysis →
+                    </a>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>🐛 Check for Pests</h3>
+                    <p>Enter current weather conditions to get early warnings about potential pest threats before they damage your crops.</p>
+                    <a href="/pest-detection-page" class="step-action">
+                        Detect Pests →
+                    </a>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>💰 Monitor Market Prices</h3>
+                    <p>Get price forecasts and market trends to decide the best time to sell your harvest for maximum profit.</p>
+                    <a href="/market-prediction-page" class="step-action">
+                        View Markets →
+                    </a>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <h3>📚 Review Your History</h3>
+                    <p>Track your past analyses and see how accurate the predictions were. Learn from historical data to improve decisions.</p>
+                    <a href="/data-history-page" class="step-action">
+                        View History →
+                    </a>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">6</div>
+                    <h3>⚡ Monitor Performance</h3>
+                    <p>Check system health and your usage statistics. Ensure everything is running smoothly for reliable insights.</p>
+                    <a href="/performance-page" class="step-action">
+                        Check Status →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Tips Section -->
+            <div class="quick-tips">
+                <h3>💡 Quick Tips for Success</h3>
+                <div class="tips-grid">
+                    <div class="tip-item">
+                        <div class="tip-icon">📝</div>
+                        <div class="tip-content">
+                            <h4>Accurate Data Input</h4>
+                            <p>Always enter accurate soil and weather data. Better input = better recommendations. Use soil testing kits for precise measurements.</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-item">
+                        <div class="tip-icon">🔄</div>
+                        <div class="tip-content">
+                            <h4>Regular Monitoring</h4>
+                            <p>Check the system weekly during growing season. Run analyses before major farming decisions like planting or fertilizing.</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-item">
+                        <div class="tip-icon">❓</div>
+                        <div class="tip-content">
+                            <h4>Use Help Features</h4>
+                            <p>Look for question mark (?) icons throughout the site. Hover over them for helpful explanations and tips.</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-item">
+                        <div class="tip-icon">📱</div>
+                        <div class="tip-content">
+                            <h4>Mobile Friendly</h4>
+                            <p>Access the platform from your smartphone or tablet. All features work on mobile devices for field use.</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-item">
+                        <div class="tip-icon">💾</div>
+                        <div class="tip-content">
+                            <h4>Save Your Data</h4>
+                            <p>All your analyses are automatically saved. Export important reports as PDF files for record keeping.</p>
+                        </div>
+                    </div>
+
+                    <div class="tip-item">
+                        <div class="tip-icon">🎯</div>
+                        <div class="tip-content">
+                            <h4>Start Simple</h4>
+                            <p>Begin with basic analysis, then explore advanced features. Don't feel overwhelmed - take it step by step.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Tutorial Section -->
+            <div class="video-section">
+                <h3>🎥 Video Walkthrough</h3>
+                <p>Watch this 5-minute tutorial to see the platform in action</p>
+                
+                <div class="video-placeholder">
+                    <button class="play-button" onclick="alert('Video tutorial coming soon! For now, use the interactive tutorial on the homepage.')">
+                        ▶️
+                    </button>
+                    <h4>Complete Platform Walkthrough</h4>
+                    <p>Learn how to use all features step-by-step</p>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                    <a href="/" class="step-action">← Back to Home</a>
+                    <a href="/analysis" class="step-action">Start First Analysis</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Animation Frames Data - VIVID Farming lifecycle with BRIGHT colors
+        const frames = [
+            { 
+                label: 'Spring Awakening', 
+                bg: '#081b1f',
+                color1: '#0d4f4f',
+                color2: '#1a9a7d',
+                accent: '#10b981',
+                icon: '🌱',
+                elements: 'seeds'
+            },
+            { 
+                label: 'Soil Preparation',
+                bg: '#3d2817',
+                color1: '#8b6f47',
+                color2: '#a8825c',
+                accent: '#d97706',
+                icon: '🌍',
+                elements: 'soil'
+            },
+            { 
+                label: 'Planting Season',
+                bg: '#0a1f3d',
+                color1: '#1a5f8f',
+                color2: '#2a8fbf',
+                accent: '#0ea5e9',
+                icon: '🌊',
+                elements: 'water'
+            },
+            { 
+                label: 'Growth Phase',
+                bg: '#0d3d0d',
+                color1: '#2a7a2a',
+                color2: '#4faf4f',
+                accent: '#22c55e',
+                icon: '🌿',
+                elements: 'leaves'
+            },
+            { 
+                label: 'Peak Season',
+                bg: '#3d3d0d',
+                color1: '#8f8f2a',
+                color2: '#bfbf4f',
+                accent: '#fbbf24',
+                icon: '☀️',
+                elements: 'sun'
+            },
+            { 
+                label: 'Harvest Time',
+                bg: '#5c2e0a',
+                color1: '#c45a1a',
+                color2: '#f59e0b',
+                accent: '#ff9500',
+                icon: '🌾',
+                elements: 'harvest'
+            },
+            { 
+                label: 'Post Harvest',
+                bg: '#2d1f3d',
+                color1: '#7a4fa8',
+                color2: '#a857e8',
+                accent: '#c084fc',
+                icon: '🔄',
+                elements: 'wind'
+            },
+            { 
+                label: 'Rest Period',
+                bg: '#0a1f2d',
+                color1: '#1a5f7a',
+                color2: '#2a9fbf',
+                accent: '#06b6d4',
+                icon: '❄️',
+                elements: 'snow'
+            }
+        ];
+
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let scrollProgress = 0;
+        let time = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 16, g: 185, b: 129 };
+        }
+
+        function lerpColor(c1, c2, t) {
+            return {
+                r: Math.round(c1.r + (c2.r - c1.r) * t),
+                g: Math.round(c1.g + (c2.g - c1.g) * t),
+                b: Math.round(c1.b + (c2.b - c1.b) * t)
+            };
+        }
+
+        function rgbToString(rgb) {
+            return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        }
+
+        function drawBackground() {
+            const frameCount = frames.length;
+            const normalizedScroll = Math.min(scrollProgress, 1);
+            const frameIndex = normalizedScroll * (frameCount - 1);
+            const currentIdx = Math.floor(frameIndex);
+            const nextIdx = Math.min(currentIdx + 1, frameCount - 1);
+            const lerp = frameIndex - currentIdx;
+
+            const current = frames[currentIdx];
+            const next = frames[nextIdx];
+
+            // STRONG background color based on scroll position
+            const bgColor1 = lerpColor(hexToRgb(current.color1), hexToRgb(next.color1), lerp);
+            const bgColor2 = lerpColor(hexToRgb(current.color2), hexToRgb(next.color2), lerp);
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, rgbToString(bgColor1));
+            gradient.addColorStop(0.3, rgbToString(bgColor2));
+            gradient.addColorStop(0.7, rgbToString(bgColor1));
+            gradient.addColorStop(1, rgbToString(bgColor2));
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw LARGE animated elements
+            drawLargeElements(current, next, lerp);
+            drawFloatingShapes(current, next, lerp);
+            drawAnimatedGlows(current, next, lerp);
+        }
+
+        function drawLargeElements(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+            const accentStr = rgbToString(accent);
+
+            time += 0.016; // ~60fps
+
+            ctx.font = 'bold 200px Arial';
+            ctx.fillStyle = accentStr;
+            ctx.globalAlpha = 0.6;
+            ctx.textAlign = 'center';
+            ctx.fillText(current.icon, canvas.width * 0.25, canvas.height * 0.4);
+            ctx.fillText(next.icon, canvas.width * 0.75, canvas.height * 0.6);
+            ctx.globalAlpha = 1;
+
+            // Draw circles based on stage
+            const circleCount = 8 + Math.floor(scrollProgress * 12);
+            for (let i = 0; i < circleCount; i++) {
+                const angle = (time * 0.5 + i * (Math.PI * 2 / circleCount)) % (Math.PI * 2);
+                const radius = 150 + Math.sin(time * 0.3 + i) * 50;
+                const x = canvas.width / 2 + Math.cos(angle) * radius;
+                const y = canvas.height / 2 + Math.sin(angle) * radius;
+                const size = 4 + Math.sin(time + i) * 2;
+
+                ctx.fillStyle = accentStr;
+                ctx.globalAlpha = 0.6 + Math.sin(time * 1.5 + i) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawFloatingShapes(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            const shapeCount = 25;
+            for (let i = 0; i < shapeCount; i++) {
+                const x = (Math.sin(time * 0.2 + i * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                const y = (Math.cos(time * 0.15 + i * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                const size = 8 + Math.sin(time * 2 + i) * 4;
+                const opacity = 0.4 + Math.sin(time + i * 0.3) * 0.25;
+
+                ctx.fillStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw connecting lines
+                if (i % 3 === 0) {
+                    const nextI = (i + 1) % shapeCount;
+                    const nextX = (Math.sin(time * 0.2 + nextI * 0.8 + scrollProgress * Math.PI * 2) * 0.5 + 0.5) * canvas.width;
+                    const nextY = (Math.cos(time * 0.15 + nextI * 0.6 + scrollProgress * Math.PI * 3) * 0.5 + 0.5) * canvas.height;
+
+                    ctx.strokeStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, ${opacity * 0.3})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(nextX, nextY);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawAnimatedGlows(current, next, lerp) {
+            const accentCur = hexToRgb(current.accent);
+            const accentNext = hexToRgb(next.accent);
+            const accent = lerpColor(accentCur, accentNext, lerp);
+
+            // Central pulsing glow
+            const pulseSize = 300 + Math.sin(time * 2) * 100;
+            const glowGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, pulseSize);
+            
+            glowGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.6)`);
+            glowGrad.addColorStop(0.3, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.4)`);
+            glowGrad.addColorStop(0.7, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.1)`);
+            glowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Corner glows
+            const corners = [
+                { x: 0, y: 0 },
+                { x: canvas.width, y: 0 },
+                { x: 0, y: canvas.height },
+                { x: canvas.width, y: canvas.height }
+            ];
+
+            corners.forEach((corner, i) => {
+                const cornerGrad = ctx.createRadialGradient(corner.x, corner.y, 0, corner.x, corner.y, 500);
+                cornerGrad.addColorStop(0, `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.3)`);
+                cornerGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = cornerGrad;
+                ctx.fillRect(corner.x - 500, corner.y - 500, 1000, 1000);
+            });
+        }
+
+        function onScroll() {
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress = windowHeight > 0 ? window.scrollY / windowHeight : 0;
+        }
+
+        function animate() {
+            drawBackground();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', resizeCanvas);
+
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>
