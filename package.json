@@ -1,0 +1,16 @@
+{
+  "name": "smart-crop-advisory-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "start": "node server/index.js",
+    "dev": "concurrently \"node server/index.js\" \"npm --prefix frontend run dev\""
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
