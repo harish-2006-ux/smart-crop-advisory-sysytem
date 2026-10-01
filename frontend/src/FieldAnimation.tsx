@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Reading } from './data';
 
-type Props = { reading: Reading | null };
+type Props = { reading: Reading | null; showAdvisory?: boolean };
 type Stage = { name: string; action: string; color: string };
 
 const stages: Stage[] = [
@@ -22,7 +22,7 @@ function stageFor(progress: number) {
   return stages[5];
 }
 
-export default function FieldAnimation({ reading }: Props) {
+export default function FieldAnimation({ reading, showAdvisory = true }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(0);
   const stage = useMemo(() => stageFor(progress), [progress]);
@@ -155,13 +155,13 @@ export default function FieldAnimation({ reading }: Props) {
 
   return <>
     <canvas ref={canvasRef} className="field-animation" aria-hidden="true" />
-    <aside className="tilth-advisory" aria-live="polite" aria-label="Smart crop advisory animation panel">
+    {showAdvisory && <aside className="tilth-advisory" aria-live="polite" aria-label="Smart crop advisory animation panel">
       <div className="tilth-advisory-card" style={{ '--tilth-accent': stage.color } as CSSProperties}>
         <div className="tilth-advisory-meta"><span>SMART CROP ADVISORY</span></div>
         <h2>{stage.name}</h2>
         <p>{action}</p>
         <div className="tilth-advisory-metrics"><span>Soil moisture <b>{moisture}</b></span><span>Field signal <b>{signal}</b></span></div>
       </div>
-    </aside>
+    </aside>}
   </>;
 }
