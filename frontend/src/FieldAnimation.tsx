@@ -157,7 +157,7 @@ export default function FieldAnimation({ reading }: Props) {
     <canvas ref={canvasRef} className="field-animation" aria-hidden="true" />
     <aside className="tilth-advisory" aria-live="polite" aria-label="Smart crop advisory animation panel">
       <div className="tilth-advisory-card" style={{ '--tilth-accent': stage.color } as CSSProperties}>
-        <div className="tilth-advisory-meta"><span>SMART CROP ADVISORY</span><b>DAY {Math.round(progress * 118)}</b></div>
+        <div className="tilth-advisory-meta"><span>SMART CROP ADVISORY</span></div>
         <h2>{stage.name}</h2>
         <p>{action}</p>
         <div className="tilth-advisory-metrics"><span>Soil moisture <b>{moisture}</b></span><span>Field signal <b>{signal}</b></span></div>
